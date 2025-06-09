@@ -1,4 +1,4 @@
-const Reserva = require('../model/reservaModel');
+const Reserva = require('../model/reservationModel');
 
 async function crear(req, res) {
   try {

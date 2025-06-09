@@ -1,6 +1,6 @@
 const express = require('express');
 const sequelize = require('./src/config/db');
-const reservaRoutes = require('./src/routes/reservaRoutes');
+const reservaRoutes = require('./src/routes/reservationRoutes');
 require('dotenv').config();
 
 const app = express();
