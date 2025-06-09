@@ -1,8 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { crear } = require('../controller/reservaController');
+const { create } = require('../controller/reservationModel'); 
 const verifyToken = require('../middleware/auth');
 
-router.post('/reservas', verifyToken, crear);
+router.post('/reservations', verifyToken, create); 
 
 module.exports = router;
