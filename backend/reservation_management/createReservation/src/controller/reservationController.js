@@ -1,38 +1,38 @@
-const Reserva = require('../model/reservationModel');
+const Reservation = require('../model/reservationModel');
 
-async function crear(req, res) {
+async function create(req, res) {
   try {
-    const { usuarioId, espacio, fecha, hora, motivo } = req.body;
+    const { userId, space, date, time, reason } = req.body;
 
-    if (!usuarioId || !espacio || !fecha || !hora) {
-      return res.status(400).json({ message: 'Campos obligatorios faltantes' });
+    if (!userId || !space || !date || !time) {
+      return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Validar tipo de espacio
-    const espaciosPermitidos = ['Sala', 'Cancha Deportiva'];
-    if (!espaciosPermitidos.includes(espacio)) {
-      return res.status(400).json({ message: 'El tipo de espacio debe ser Sala o Cancha Deportiva' });
+    // Validate allowed space types
+    const allowedSpaces = ['Room', 'Sports Court'];
+    if (!allowedSpaces.includes(space)) {
+      return res.status(400).json({ message: 'The space type must be either Room or Sports Court' });
     }
 
-    // Validación de fecha (ejemplo: que no sea una fecha pasada)
-    const hoy = new Date().toISOString().split('T')[0];
-    if (fecha < hoy) {
-      return res.status(400).json({ message: 'La fecha debe ser hoy o una fecha futura' });
+    // Date validation (e.g., must not be a past date)
+    const today = new Date().toISOString().split('T')[0];
+    if (date < today) {
+      return res.status(400).json({ message: 'The date must be today or a future date' });
     }
 
-    const nuevaReserva = await Reserva.create({
-      usuarioId,
-      espacio,
-      fecha,
-      hora,
-      motivo
+    const newReservation = await Reservation.create({
+      userId,
+      space,
+      date,
+      time,
+      reason
     });
 
-    res.status(201).json(nuevaReserva);
+    res.status(201).json(newReservation);
   } catch (error) {
-    console.error('Error al crear reserva:', error);
-    res.status(500).json({ message: 'Error al guardar la reserva' });
+    console.error('Error creating reservation:', error);
+    res.status(500).json({ message: 'Error saving the reservation' });
   }
 }
 
-module.exports = { crear };
+module.exports = { create };
