@@ -1,6 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
-
+const sequelize = require('../../config/db'); // Ajusta la ruta según tu estructura
 
 const Booking = sequelize.define('Booking', {
   id: {
@@ -12,15 +11,9 @@ const Booking = sequelize.define('Booking', {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  space: {
-    type: DataTypes.STRING,
-    allowNull: false,
-    validate: {
-      isIn: {
-        args: [['Room', 'SportsCourt']],
-        msg: 'Space must be either "Room" or "SportsCourt"'
-      }
-    }
+  spaceId: {
+    type: DataTypes.INTEGER,
+    allowNull: false
   },
   date: {
     type: DataTypes.DATEONLY,
