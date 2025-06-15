@@ -1,6 +1,6 @@
 const express = require('express');
 const sequelize = require('./src/config/db');
-const reservationRoutes = require('./src/routes/reservaRoutes'); // you can rename to 'reservationRoutes.js' for consistency
+const reservationRoutes = require('./src/routes/reservationRoutes'); // you can rename to 'reservationRoutes.js' for consistency
 require('dotenv').config();
 
 const app = express();
