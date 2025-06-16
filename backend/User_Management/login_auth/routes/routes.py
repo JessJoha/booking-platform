@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+from extensions import db
 from models.model import User
 import bcrypt, jwt, datetime, os
 
@@ -21,7 +22,6 @@ def login():
     if not user.check_password(password):
         return jsonify({'error': 'Invalid credentials'}), 401
 
-    # Crear token JWT
     payload = {
         'user_id': user.id,
         'role': user.role,
