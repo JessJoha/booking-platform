@@ -1,31 +1,38 @@
-from flask import Flask
-from flask_cors import CORS
 from dotenv import load_dotenv
-from config import Config
-from extensions import db
-from routes import auth_bp 
-import os
 from pathlib import Path
-
-
 load_dotenv(dotenv_path=Path('.') / '.env')
 
+from flask import Flask
+from flask_cors import CORS
+from config import Config
+from extensions import db
+from routes.routes import auth_bp
+import pymysql
+from sqlalchemy.exc import OperationalError
+from sqlalchemy import text
+
+pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 app.config.from_object(Config)
-
 
 CORS(app)
 db.init_app(app)
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
-# Ruta base
 @app.route('/')
 def index():
     return 'login_auth is running', 200
 
-# Ejecutar servidor
 if __name__ == '__main__':
     with app.app_context():
+        try:
+            db.session.execute(text('SELECT 1'))
+            print("Successfully connected to the database.")
+        except OperationalError as e:
+            print("Failed to connect to the database:")
+            print(e)
+
         db.create_all()
+
     app.run(debug=True, host='0.0.0.0', port=app.config['LOGIN_SERVICE_PORT'])
