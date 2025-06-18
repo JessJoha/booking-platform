@@ -1,5 +1,5 @@
-import bcrypt
 from extensions import db
+import bcrypt
 
 class User(db.Model):
     __tablename__ = 'users'
