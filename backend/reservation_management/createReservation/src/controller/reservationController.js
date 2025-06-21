@@ -1,22 +1,20 @@
-const Reservation = require('../model/reservationModel');
+const { Booking } = require('../model/reservationModel');
 
 async function create(req, res) {
   try {
     const { userId, spaceId, date, time, reason } = req.body;
 
-
     if (!userId || !spaceId || !date || !time) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    
     const today = new Date().toISOString().split('T')[0];
     if (date < today) {
       return res.status(400).json({ message: 'The date must be today or a future date' });
     }
 
     
-    const newReservation = await Reservation.create({
+    const newReservation = await Booking.create({
       userId,
       spaceId,
       date,
@@ -32,3 +30,4 @@ async function create(req, res) {
 }
 
 module.exports = { create };
+  
