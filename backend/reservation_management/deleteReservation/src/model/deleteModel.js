@@ -1,19 +1,18 @@
-// deleteModel.js
 const { DataTypes } = require('sequelize');
-const sequelize = require('../config/db');
+const sequelize = require('../config/db'); 
 
 const Booking = sequelize.define('Booking', {
   id: {
     type: DataTypes.INTEGER,
-    autoIncrement: true,  
+    autoIncrement: true,
     primaryKey: true
   },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false
   },
-  space: {
-    type: DataTypes.STRING,
+  spaceId: {
+    type: DataTypes.INTEGER,
     allowNull: false
   },
   date: {
@@ -33,4 +32,4 @@ const Booking = sequelize.define('Booking', {
   tableName: 'Bookings'
 });
 
-module.exports = Booking;
+module.exports = { Booking };

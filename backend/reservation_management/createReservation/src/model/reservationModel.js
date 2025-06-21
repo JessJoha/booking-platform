@@ -1,5 +1,5 @@
 const { DataTypes } = require('sequelize');
-const sequelize = require('../../config/db'); // Ajusta la ruta según tu estructura
+const sequelize = require('../config/db'); 
 
 const Booking = sequelize.define('Booking', {
   id: {
@@ -32,4 +32,5 @@ const Booking = sequelize.define('Booking', {
   tableName: 'Bookings'
 });
 
-module.exports = Booking;
+module.exports = { Booking };
+
