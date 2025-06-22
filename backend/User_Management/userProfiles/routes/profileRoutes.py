@@ -25,20 +25,22 @@ def get_username_from_token():
     return None
 
 
-@profile_bp.route('/profile/init', methods=['POST'])
+@profile_bp.route('/init', methods=['POST'])
 def init_profile():
     username = get_username_from_token()
-    if not username:
+    decoded = decode_token(request.headers.get('Authorization').split()[1])
+    if not username or not decoded:
         return jsonify({"error": "Unauthorized"}), 401
 
-    
+    user_id = decoded.get("user_id")  
+
     existing = collection.find_one({"username": username})
     if existing:
         return jsonify({"message": "Profile already exists"}), 200
 
-   
     data = request.json or {}
     new_profile = {
+        "id": user_id, 
         "username": username,
         "email": data.get("email", ""),
         "phone": data.get("phone", ""),
@@ -50,8 +52,7 @@ def init_profile():
     return jsonify({"message": "Profile created", "profile": new_profile}), 201
 
 
-
-@profile_bp.route('/profile', methods=['GET'])
+@profile_bp.route('/', methods=['GET'])
 def get_profile():
     username = get_username_from_token()
     if not username:
@@ -63,7 +64,22 @@ def get_profile():
 
     return jsonify(user), 200
 
-@profile_bp.route('/profile', methods=['PUT'])
+
+@profile_bp.route('/username/<string:username>', methods=['GET'])
+def get_user_by_username(username): 
+    user = collection.find_one({"username": username}, {"_id": 0})
+
+    if not user:
+        return jsonify({"error": "User not found"}), 404
+
+    return jsonify({
+        "username": user.get("username"),
+        "email": user.get("email"),
+        "id": user.get("id", 1) 
+    }), 200
+
+
+@profile_bp.route('/', methods=['PUT'])
 def update_profile():
     username = get_username_from_token()
     if not username:
