@@ -1,4 +1,5 @@
 const { Booking } = require('../model/deleteModel');
+const { sendReservationEvent } = require('../kafkaProducer');
 require('dotenv').config();
 const axios = require('axios');
 const AWS = require('aws-sdk');
@@ -49,6 +50,14 @@ const deleteReservation = async (req, res) => {
     // Eliminar la reserva
     await reservation.destroy();
 
+    const event = {
+      spaceId: reservation.spaceId,  
+      date: reservation.date,        
+      action: 'deleted'              
+    };
+
+     sendReservationEvent(event);
+
     // Envío futuro al microservicio de reasignación
     /*
     const message = {
@@ -68,7 +77,6 @@ const deleteReservation = async (req, res) => {
     */
 
     res.status(200).json({ message: 'Reservation successfully cancelled.' });
-
   } catch (error) {
     console.error('Error:', error.message);
     res.status(500).json({ message: 'Error deleting reservation', error: error.message });

@@ -1,4 +1,5 @@
 const { Booking } = require('../model/reservationModel');
+const { sendReservationEvent } = require('../kafkaProducer'); 
 
 async function create(req, res) {
   try {
@@ -13,7 +14,6 @@ async function create(req, res) {
       return res.status(400).json({ message: 'The date must be today or a future date' });
     }
 
-    
     const newReservation = await Booking.create({
       userId,
       spaceId,
@@ -21,6 +21,13 @@ async function create(req, res) {
       time,
       reason
     });
+
+    const event = {
+      spaceId: newReservation.spaceId,
+      date: newReservation.date,
+      action: 'created'
+    };
+    sendReservationEvent(event); 
 
     res.status(201).json(newReservation);
   } catch (error) {
@@ -30,4 +37,3 @@ async function create(req, res) {
 }
 
 module.exports = { create };
-  
