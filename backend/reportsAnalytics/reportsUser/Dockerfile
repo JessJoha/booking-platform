@@ -16,4 +16,4 @@ COPY . .
 EXPOSE 3009
 
 
-CMD ["node", "src/server.js"]
+CMD ["node", "server.js"]

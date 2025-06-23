@@ -1,11 +1,17 @@
-FROM golang:1.20
+FROM golang:1.23
 
 WORKDIR /app
 
-COPY go.mod ./
+
+COPY go.mod go.sum ./
 RUN go mod download
 
+
 COPY . .
+
+
+RUN go mod tidy
+
 
 RUN go build -o updateSpace main.go
 
