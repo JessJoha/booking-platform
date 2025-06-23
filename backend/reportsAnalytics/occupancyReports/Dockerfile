@@ -1,6 +1,4 @@
-
 FROM golang:1.23
-
 
 WORKDIR /app
 
@@ -8,13 +6,15 @@ WORKDIR /app
 COPY go.mod go.sum ./
 RUN go mod download
 
+
 COPY . .
+
+
+RUN go mod tidy
 
 
 RUN go build -o occupancyReports main.go
 
-
-EXPOSE 8080
-
+EXPOSE 6000
 
 CMD ["./occupancyReports"]
