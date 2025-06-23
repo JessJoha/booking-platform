@@ -53,8 +53,8 @@ jobs:
             fi
 
             # Detener y eliminar contenedores antiguos
-            sudo docker stop login-auth recovery-password register-user user-profiles || true
-            sudo docker rm login-auth recovery-password register-user user-profiles || true
+            sudo docker stop login-auth recovery-password register-user userprofileservice || true
+            sudo docker rm login-auth recovery-password register-user userprofileservice || true
 
             # Descargar imágenes actualizadas
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/login-auth:v1
