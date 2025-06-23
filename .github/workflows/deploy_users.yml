@@ -16,19 +16,19 @@ jobs:
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME}}
-          password: ${{ secrets.DOCKERHUB_PASSWORD_ }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD}}
 
       - name: Build and push images
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/login-auth:v1 ./backend/User_Management/login_auth
           docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/recovery-password:v1 ./backend/User_Management/recoveryPassword
           docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/register-user:v1 ./backend/User_Management/registerUser
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/user-profiles:v1 ./backend/User_Management/userProfiles
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME}}/userprofileservice:v5 ./backend/User_Management/userProfiles
 
           docker push ${{ secrets.DOCKERHUB_USERNAME}}/login-auth:v1
           docker push ${{ secrets.DOCKERHUB_USERNAME}}/recovery-password:v1
           docker push ${{ secrets.DOCKERHUB_USERNAME}}/register-user:v1
-          docker push ${{ secrets.DOCKERHUB_USERNAME}}/user-profiles:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME}}/userprofileservice:v5
 
   deploy:
     needs: build-and-push
@@ -60,7 +60,7 @@ jobs:
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/login-auth:v1
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/recovery-password:v1
             sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/register-user:v1
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/user-profiles:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/userprofileservice:v5
 
             # Ejecutar contenedores con MySQL en AWS y puertos asignados
             sudo docker run -d --name login-auth -p 5000:5000 \
@@ -71,7 +71,7 @@ jobs:
 
             sudo docker run -d --name recovery-password -p 5001:5001 \
               -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_J }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL}}" \
               -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
               ${{ secrets.DOCKERHUB_USERNAME_J }}/recovery-password:v1
 
@@ -85,4 +85,4 @@ jobs:
               -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
               -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL}}" \
               -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL}}" \
-              ${{ secrets.DOCKERHUB_USERNAME}}/user-profiles:v1
+              ${{ secrets.DOCKERHUB_USERNAME}}/userprofileservice:v5
