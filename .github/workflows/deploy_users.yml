@@ -37,9 +37,9 @@ jobs:
       - name: Deploy UserManagement to AWS EC2
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST_DNS_USERS }}
+          host: ${{ secrets.HOST_DNS_USERS}}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY_USERS }}
+          key: ${{ secrets.EC2_SSH_KEY_USERS}}
           script: |
             
           
