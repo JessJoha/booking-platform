@@ -1,20 +1,17 @@
 
-FROM golang:1.21-alpine
+FROM golang:1.20
 
 
 WORKDIR /app
 
 
-RUN apk update && apk add --no-cache git
-
 COPY go.mod go.sum ./
 RUN go mod download
-
 
 COPY . .
 
 
-RUN go build -o occupancyReports ./src/main.go
+RUN go build -o occupancyReports main.go
 
 
 EXPOSE 8080
