@@ -29,7 +29,7 @@ async function sendReservationEvent(event) {
   }
 }
 
-// Conectar el productor
+
 async function run() {
   await producer.connect();
   console.log('Kafka producer connected successfully');

@@ -37,3 +37,4 @@ async function sendReservationEvent(event) {
 }
 
 module.exports = { sendReservationEvent };
+
