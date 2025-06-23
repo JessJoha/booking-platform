@@ -1,6 +1,8 @@
 module occupancyReports
 
-go 1.23
+go 1.23.0
+
+toolchain go1.23.5
 
 require (
 	github.com/IBM/sarama v1.45.2
