@@ -80,7 +80,7 @@ jobs:
               ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
 
             sudo docker run -d --name userprofileservice -p 5003:5003 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+            -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+            -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE}}" \
+            ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+
