@@ -67,7 +67,7 @@ jobs:
               -e DB_URL="${{ secrets.DB_URL_MYSQL}}" \
               -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL}}" \
               -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME_J }}/login-auth:v1
+              ${{ secrets.DOCKERHUB_USERNAME}}/login-auth:v1
 
             sudo docker run -d --name recovery-password -p 5002:5002 \
               -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
