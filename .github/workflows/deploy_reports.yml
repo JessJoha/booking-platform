@@ -57,9 +57,9 @@ jobs:
 
             # Ejecutar reports-user (PostgreSQL)
             sudo docker run -d --name reports-user -p 3009:3009 \
-            -e DB_URL="${{ secrets.DB_URL_REPORT}}" \
-            -e DB_USERNAME="${{ secrets.DB_USERNAME_REPORT}}" \
-            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_REPORT}}" \
+            -e DB_URL="${{ secrets.DB_URL_POSTGRES}}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES}}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES}}" \
             -e PORT="3009" \
             ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
 
