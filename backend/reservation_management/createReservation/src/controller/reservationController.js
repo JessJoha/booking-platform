@@ -32,7 +32,7 @@ async function create(req, res) {
     res.status(201).json(newReservation);
   } catch (error) {
     console.error('Error creating reservation:', error);
-    res.status(500).json({ message: 'Error saving the reservation' });
+    res.status(500).json({ message: 'test' });
   }
 }
 
