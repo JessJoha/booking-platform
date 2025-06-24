@@ -1,0 +1,86 @@
+name: Deploy UserManagement Microservices
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push UserManagement images
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1 ./backend/User_Management/login_auth
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1 ./backend/User_Management/recoveryPassword
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1 ./backend/User_Management/registerUser
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5 ./backend/User_Management/userProfiles
+
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy UserManagement to AWS EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_USERS }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_USERS }}
+          script: |
+            if ! command -v docker &> /dev/null
+            then
+              sudo apt update
+              sudo apt install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker ubuntu
+            fi
+
+            # Detener y eliminar contenedores antiguos
+            sudo docker stop login-auth recovery-password register-user userprofileservice || true
+            sudo docker rm login-auth recovery-password register-user userprofileservice || true
+
+            # Descargar imágenes actualizadas
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+
+            # Ejecutar contenedores con configuración de entorno
+            sudo docker run -d --name login-auth -p 5000:5000 \
+              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
+
+            sudo docker run -d --name recovery-password -p 5002:5002 \
+              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1
+
+            sudo docker run -d --name register-user -p 5001:5001 \
+              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+
+            sudo docker run -d --name userprofileservice -p 5003:5003 \
+            -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+            -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE}}" \
+            ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+

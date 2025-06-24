@@ -1,13 +1,12 @@
 const express = require('express');
 require('dotenv').config();
-const sequelize = require('./config/db');
+const sequelize = require('./src/config/db');
 const reservationRoutes = require('./src/routes/deleteRoutes');
 
 const app = express();
 app.use(express.json());
 
 app.use('/api', reservationRoutes);
-
 sequelize.sync().then(() => {
   console.log('Database synced');
   const PORT = process.env.PORT || 3002;

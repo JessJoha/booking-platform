@@ -17,7 +17,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3011"
+		port = "3010"
 	}
 
 	router.Run(fmt.Sprintf(":%s", port))

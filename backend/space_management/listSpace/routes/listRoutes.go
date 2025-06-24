@@ -7,5 +7,8 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
-	router.GET("/spaces", controller.GetAllSpaces)
+	api := router.Group("/api")
+	{
+		api.GET("/spaces", controller.GetAllSpaces)
+	}
 }

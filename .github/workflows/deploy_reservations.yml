@@ -1,0 +1,87 @@
+name: Deploy ReservationManagement Microservices
+
+on:
+  push:
+    branches:
+      - test
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push reservation images
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1 ./backend/reservation_management/createReservation
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1 ./backend/reservation_management/deleteReservation
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1 ./backend/reservation_management/listReservation
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1 ./backend/reservation_management/updateReservation
+
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1
+
+  deploy:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy ReservationManagement to AWS EC2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_RESERVATION}}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_RESERVATION}}
+          script: |
+            if ! command -v docker &> /dev/null
+            then
+              sudo apt update
+              sudo apt install -y docker.io
+              sudo systemctl start docker
+              sudo systemctl enable docker
+              sudo usermod -aG docker ubuntu
+            fi
+
+            # Detener y eliminar contenedores anteriores
+            # Detener y eliminar contenedores antiguos
+            sudo docker stop create-reservation delete-reservation list-reservation update-reservation || true
+            sudo docker rm create-reservation delete-reservation list-reservation update-reservation || true
+
+            # Descargar imágenes actualizadas
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/create-reservation:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/delete-reservation:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/list-reservation:v1
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME}}/update-reservation:v1
+
+            # Ejecutar contenedores con MySQL en AWS y puertos asignados
+            sudo docker run -d --name create-reservation -p 3001:3001 \
+            -e DB_URL="${{ secrets.DB_URL_POSTGRES }}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+            ${{ secrets.DOCKERHUB_USERNAME}}/create-reservation:v1
+
+            sudo docker run -d --name delete-reservation -p 3002:3002 \
+            -e DB_URL="${{ secrets.DB_URL_POSTGRES }}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+            ${{ secrets.DOCKERHUB_USERNAME}}/delete-reservation:v1
+
+            sudo docker run -d --name list-reservation -p 3004:3004 \
+            -e DB_URL="${{ secrets.DB_URL_POSTGRES }}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES}}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+            ${{ secrets.DOCKERHUB_USERNAME}}/list-reservation:v1
+
+            sudo docker run -d --name update-reservation -p 3003:3003 \
+            -e DB_URL="${{ secrets.DB_URL_POSTGRES }}" \
+            -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+            ${{ secrets.DOCKERHUB_USERNAME}}/update-reservation:v1

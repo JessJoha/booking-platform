@@ -7,5 +7,9 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
-	router.DELETE("/spaces/:id", controller.DeleteSpace)
+	api := router.Group("/api")
+	{
+		api.DELETE("/spaces/:id", controller.DeleteSpace)
+
+	}
 }
