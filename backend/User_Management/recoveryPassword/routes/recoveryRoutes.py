@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 from extensions import db, redis_client
-from model.recoveryModel import User
+from backend.User_Management.recoveryPassword.model.recovery_Model import User
 from email_utils import send_email
 import random
 
