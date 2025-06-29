@@ -49,7 +49,7 @@ def login():
     }
     try:
         response = requests.post(
-            "http://35.170.155.189:5003/profile/profile/init",
+            "http://localhost:5010/profile/init",
             json=profile_payload,
             headers=headers,
             timeout=5
