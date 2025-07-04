@@ -10,11 +10,22 @@ from routes.routes import auth_bp
 import pymysql
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import text
+from flasgger import Swagger  # <-- Add this import
 
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 app.config.from_object(Config)
+
+# Swagger configuration
+swagger = Swagger(app, template={
+    "swagger": "2.0",
+    "info": {
+        "title": "Login Auth Service API",
+        "description": "API documentation for the Login Auth microservice.",
+        "version": "1.0.0"
+    }
+})
 
 CORS(app)
 db.init_app(app)
@@ -22,6 +33,15 @@ app.register_blueprint(auth_bp, url_prefix='/auth')
 
 @app.route('/')
 def index():
+    """
+    Health check endpoint.
+    ---
+    responses:
+      200:
+        description: Service is running
+        examples:
+          text: login_auth is running
+    """
     return 'login_auth is running', 200
 
 if __name__ == '__main__':

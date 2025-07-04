@@ -7,16 +7,36 @@ from flask_cors import CORS
 from config import Config
 from extensions import db
 from routes.reset_route import reset_bp
+from flasgger import Swagger  
 
 app = Flask(__name__)
 app.config.from_object(Config)
 CORS(app)
 db.init_app(app)
 
+# Swagger configuration
+swagger = Swagger(app, template={
+    "swagger": "2.0",
+    "info": {
+        "title": "Reset Password Service API",
+        "description": "API documentation for the Reset Password microservice.",
+        "version": "1.0.0"
+    }
+})
+
 app.register_blueprint(reset_bp, url_prefix="/recover")
 
 @app.route('/')
 def index():
+    """
+    Health check endpoint.
+    ---
+    responses:
+      200:
+        description: Service is running
+        examples:
+          text: resetPasswordService is running
+    """
     return "resetPasswordService is running", 200
 
 if __name__ == "__main__":

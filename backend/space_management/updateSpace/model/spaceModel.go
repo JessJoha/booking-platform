@@ -6,4 +6,5 @@ type Space struct {
 	Location    string `json:"location"`
 	Type        string `json:"type"`
 	Description string `json:"description"`
+	Capacity    int    `json:"capacity"`
 }

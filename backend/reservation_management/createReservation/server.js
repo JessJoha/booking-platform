@@ -3,9 +3,29 @@ const sequelize = require('./src/config/db');
 const reservationRoutes = require('./src/routes/reservationRoutes'); 
 require('dotenv').config();
 
+// Swagger setup
+const swaggerUi = require('swagger-ui-express');
+const swaggerJsdoc = require('swagger-jsdoc');
+
+const swaggerOptions = {
+  definition: {
+    openapi: '3.0.0',
+    info: {
+      title: 'Reservation API',
+      version: '1.0.0',
+      description: 'API documentation for Reservation Management',
+    },
+  },
+  apis: ['./src/routes/*.js'], // Ajusta la ruta según donde estén tus rutas
+};
+
+const swaggerSpec = swaggerJsdoc(swaggerOptions);
+
 const app = express();
 app.use(express.json());
 
+// Swagger docs route
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use('/api', reservationRoutes);
 
@@ -16,6 +36,7 @@ sequelize.sync()
   .then(() => {
     app.listen(PORT, () => {
       console.log(`Reservation server running on port ${PORT}`);
+      console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
     });
   })
   .catch((err) => {

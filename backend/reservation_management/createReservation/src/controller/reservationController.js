@@ -1,5 +1,5 @@
 const { Booking } = require('../model/reservationModel');
-const { sendReservationEvent } = require('../kafkaProducer'); 
+const { sendWebhookEvent } = require('../webhook/webhookClient');
 
 async function create(req, res) {
   try {
@@ -27,7 +27,7 @@ async function create(req, res) {
       date: newReservation.date,
       action: 'created'
     };
-    sendReservationEvent(event); 
+    sendWebhookEvent(event);
 
     res.status(201).json(newReservation);
   } catch (error) {

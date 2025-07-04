@@ -8,6 +8,69 @@ auth_bp = Blueprint('auth_bp', __name__)
 
 @auth_bp.route('/login', methods=['POST'])
 def login():
+    """
+    User login endpoint.
+    ---
+    tags:
+      - Authentication
+    summary: User login
+    description: Authenticates a user with username and password. Returns a JWT token if credentials are valid.
+    consumes:
+      - application/json
+    parameters:
+      - in: body
+        name: body
+        required: true
+        description: JSON object containing username and password.
+        schema:
+          type: object
+          required:
+            - username
+            - password
+          properties:
+            username:
+              type: string
+              example: johndoe
+            password:
+              type: string
+              example: mypassword123
+    responses:
+      200:
+        description: Login successful. Returns a JWT token.
+        schema:
+          type: object
+          properties:
+            message:
+              type: string
+              example: Login successful
+            token:
+              type: string
+              example: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+      400:
+        description: Username and password are required.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Username and password are required
+      401:
+        description: Invalid credentials.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: Invalid credentials
+      404:
+        description: User not found.
+        schema:
+          type: object
+          properties:
+            error:
+              type: string
+              example: User not found
+    """
     data = request.get_json()
     username = data.get('username')
     password = data.get('password')
