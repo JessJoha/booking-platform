@@ -7,4 +7,5 @@ Flask-SQLAlchemy
 bcrypt
 requests
 flask-cors
+flasgger
 

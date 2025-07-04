@@ -2,3 +2,5 @@ Flask
 python-dotenv
 pymongo
 PyJWT
+flasgger
+flask-cors
