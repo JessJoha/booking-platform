@@ -6,5 +6,4 @@ redis
 pymysql
 bcrypt
 flasgger
-unittest
-unittest.mock
+
