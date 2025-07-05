@@ -15,6 +15,20 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
+      - name: Run unit tests for SpaceManagement
+        run: |
+          # createSpace
+          go test ./backend/space_management/createSpace/tests
+
+          # deleteSpace
+          go test ./backend/space_management/deleteSpace/tests
+
+          # updateSpace
+          go test ./backend/space_management/updateSpace/tests
+
+          # listSpace
+          go test ./backend/space_management/listSpace/tests
+
       - name: Detect changed microservices
         id: changes
         uses: dorny/paths-filter@v2

@@ -17,8 +17,37 @@ jobs:
 
       - name: Run unit tests for UserManagement
         run: |
-          pip install -r backend/User_Management/findUser/requirements.txt
-          python -m unittest discover -s backend/User_Management/findUser/tests
+            # findUser
+            pip install -r backend/User_Management/findUser/requirements.txt
+            python -m unittest discover -s backend/User_Management/findUser/tests
+
+            # getUserByUsername
+            pip install -r backend/User_Management/getUserByUsername/requirements.txt
+            python -m unittest discover -s backend/User_Management/getUserByUsername/tests
+
+            # login_auth
+            pip install -r backend/User_Management/login_auth/requirements.txt
+            python -m unittest discover -s backend/User_Management/login_auth/tests
+
+            # registerUser
+            pip install -r backend/User_Management/registerUser/requirements.txt
+            python -m unittest discover -s backend/User_Management/registerUser/tests
+
+            # resetPassword
+            pip install -r backend/User_Management/resetPassword/requirements.txt
+            python -m unittest discover -s backend/User_Management/resetPassword/tests
+
+            # sendRecoveryCode
+            pip install -r backend/User_Management/sendRecoveryCode/requirements.txt
+            python -m unittest discover -s backend/User_Management/sendRecoveryCode/tests
+
+            # updateProfile
+            pip install -r backend/User_Management/updateProfile/requirements.txt
+            python -m unittest discover -s backend/User_Management/updateProfile/tests
+
+            # userProfile
+            pip install -r backend/User_Management/userProfile/requirements.txt
+            python -m unittest discover -s backend/User_Management/userProfile/tests
 
       - name: Detect changed microservices
         id: changes

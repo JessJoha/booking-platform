@@ -15,6 +15,56 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      # TEST: createReservation
+      - name: Install dependencies for createReservation
+        run: |
+          cd backend/reservation_management/createReservation
+          npm install
+
+      - name: Run unit tests for createReservation
+        run: |
+          cd backend/reservation_management/createReservation
+          npm test
+
+      # TEST: deleteReservation
+      - name: Install dependencies for deleteReservation
+        run: |
+          cd backend/reservation_management/deleteReservation
+          npm install
+
+      - name: Run unit tests for deleteReservation
+        run: |
+          cd backend/reservation_management/deleteReservation
+          npm test
+
+      # TEST: listReservation
+      - name: Install dependencies for listReservation
+        run: |
+          cd backend/reservation_management/listReservation
+          npm install
+
+      - name: Run unit tests for listReservation
+        run: |
+          cd backend/reservation_management/listReservation
+          npm test
+
+      # TEST: updateReservation
+      - name: Install dependencies for updateReservation
+        run: |
+          cd backend/reservation_management/updateReservation
+          npm install
+
+      - name: Run unit tests for updateReservation
+        run: |
+          cd backend/reservation_management/updateReservation
+          npm test
+
+          
       - name: Detect changed microservices
         id: changes
         uses: dorny/paths-filter@v2
@@ -24,6 +74,7 @@ jobs:
             deleteReservation: backend/reservation_management/deleteReservation/**
             listReservation: backend/reservation_management/listReservation/**
             updateReservation: backend/reservation_management/updateReservation/**
+
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
