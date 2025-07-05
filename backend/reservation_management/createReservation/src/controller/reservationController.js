@@ -14,6 +14,22 @@ async function create(req, res) {
       return res.status(400).json({ message: 'The date must be today or a future date' });
     }
 
+    
+    const existingReservation = await Booking.findOne({
+      where: {
+        spaceId,
+        date,
+        time
+      }
+    });
+
+    if (existingReservation) {
+      return res.status(409).json({
+        message: 'This space is already booked at that date and time.'
+      });
+    }
+
+    
     const newReservation = await Booking.create({
       userId,
       spaceId,
@@ -22,6 +38,7 @@ async function create(req, res) {
       reason
     });
 
+    
     const event = {
       spaceId: newReservation.spaceId,
       date: newReservation.date,
@@ -32,7 +49,7 @@ async function create(req, res) {
     res.status(201).json(newReservation);
   } catch (error) {
     console.error('Error creating reservation:', error);
-    res.status(500).json({ message: 'test' });
+    res.status(500).json({ message: 'Error creating reservation' });
   }
 }
 

@@ -63,6 +63,5 @@ const verifyToken = require('../middleware/auth');
  *         description: Reservation not found
  */
 router.delete('/reservations/:id', verifyToken, deleteReservation);
-router.get('/reservations/:id', verifyToken, getReservationById);
 
 module.exports = router;

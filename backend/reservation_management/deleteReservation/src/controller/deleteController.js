@@ -1,5 +1,5 @@
 const { Booking } = require('../model/deleteModel');
-const { sendReservationEvent } = require('../kafkaProducer');
+const { sendOccupancyEvent } = require('../webhook/webhookClient');
 require('dotenv').config();
 const axios = require('axios');
 const AWS = require('aws-sdk');
@@ -22,9 +22,7 @@ const deleteReservation = async (req, res) => {
       action: 'deleted'              
     };
 
-     sendReservationEvent(event);
-
-   
+    await sendOccupancyEvent(event.spaceId, event.date, event.action);
 
     res.status(200).json({ message: 'Reservation successfully cancelled.' });
   } catch (error) {

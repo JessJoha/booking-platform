@@ -1,5 +1,5 @@
 const { Booking } = require('../model/updateModel');
-const { sendReservationEvent } = require('../kafkaProducer'); // Asegurarse de incluir el producer
+const { sendOccupancyEvent } = require('../webhook/webhookClient');
 
 const updateReservation = async (req, res) => {
   const id = req.params.id;
@@ -12,6 +12,10 @@ const updateReservation = async (req, res) => {
     }
 
     
+    const oldSpaceId = reservation.spaceId;
+    const oldDate = reservation.date;
+
+    
     reservation.date = date || reservation.date;
     reservation.time = time || reservation.time;
     reservation.reason = reason || reservation.reason;
@@ -20,14 +24,12 @@ const updateReservation = async (req, res) => {
     await reservation.save();
 
     
-    const event = {
-      spaceId: reservation.spaceId,  
-      date: reservation.date,        
-      action: 'updated'              
-    };
-
-    
-    sendReservationEvent(event);
+    if (oldSpaceId !== reservation.spaceId || oldDate !== reservation.date) {
+      await sendOccupancyEvent(oldSpaceId, oldDate, 'deleted');
+      await sendOccupancyEvent(reservation.spaceId, reservation.date, 'created');
+    } else {
+      await sendOccupancyEvent(reservation.spaceId, reservation.date, 'updated');
+    }
 
     res.status(200).json({ message: 'Reservation updated successfully', reservation });
   } catch (error) {

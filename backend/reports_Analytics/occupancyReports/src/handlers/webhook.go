@@ -59,6 +59,22 @@ func WebhookHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("✅ MongoDB updated: %+v", result)
+	log.Printf("MongoDB updated: %+v", result)
+
+	if event.Action == "deleted" {
+		var doc bson.M
+		err := config.OccupancyCollection.FindOne(ctx, filter).Decode(&doc)
+		if err == nil {
+			if resCount, ok := doc["reservations"].(int32); ok && resCount <= 0 {
+				_, err := config.OccupancyCollection.DeleteOne(ctx, filter)
+				if err != nil {
+					log.Printf("Failed to delete document with 0 reservations: %v", err)
+				} else {
+					log.Println("Deleted occupancy document with 0 reservations")
+				}
+			}
+		}
+	}
+
 	w.WriteHeader(http.StatusOK)
 }
