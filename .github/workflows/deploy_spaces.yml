@@ -30,6 +30,31 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
+      - name: Clean old Docker containers and images
+        run: |
+          docker stop create-space || true && docker rm create-space || true
+          docker stop delete-space || true && docker rm delete-space || true
+          docker stop update-space || true && docker rm update-space || true
+          docker stop list-space || true && docker rm list-space || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/create-space:v1 || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/delete-space:v1 || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/update-space:v1 || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/list-space:v1 || true
+
+      - name: Build and push updated SpaceManagement images
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/create-space:v1 ./backend/space_management/createSpace
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/create-space:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/delete-space:v1 ./backend/space_management/deleteSpace
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/delete-space:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/update-space:v1 ./backend/space_management/updateSpace
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/update-space:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/list-space:v1 ./backend/space_management/listSpace
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/list-space:v1
+
       - name: Deploy SpaceManagement to AWS EC2
         if: success()
         uses: appleboy/ssh-action@master
