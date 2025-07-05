@@ -4,13 +4,23 @@ on:
   push:
     branches:
       - test
+    paths:
+      - 'backend/reportsAnalytics/**'
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout código
         uses: actions/checkout@v3
+
+      - name: Detect changed microservices
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            reportsUser: backend/reportsAnalytics/reportsUser/**
+            occupancyReports: backend/reportsAnalytics/occupancyReports/**
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
@@ -18,59 +28,40 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build and push analytics images
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1 ./backend/reportsAnalytics/reportsUser
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1 ./backend/reportsAnalytics/occupancyReports
-
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
       - name: Deploy ReportsAnalytics to AWS EC2
+        if: success()
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.HOST_DNS_REPORT}}
+          host: ${{ secrets.HOST_DNS_REPORT }}
           username: ubuntu
-          key: ${{ secrets.EC2_SSH_KEY_REPORT}}
+          key: ${{ secrets.EC2_SSH_KEY_REPORT }}
           script: |
-            # Instalar Docker si no está presente
-            if ! command -v docker &> /dev/null
-            then
-              sudo apt update
-              sudo apt install -y docker.io
-              sudo systemctl start docker
-              sudo systemctl enable docker
-              sudo usermod -aG docker ubuntu
+            sudo apt update && sudo apt install -y docker.io || true
+            sudo systemctl start docker
+            sudo docker system prune -af
+
+            # REPORTS USER
+            if [[ "${{ steps.changes.outputs.reportsUser }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
+              sudo docker stop reports-user || true
+              sudo docker rm reports-user || true
+              sudo docker run -d --name reports-user -p 3009:3009 \
+                -e DB_HOST="${{ secrets.DB_HOST_REPORTS }}" \
+                -e DB_USER="${{ secrets.DB_USER_REPORTS }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_REPORTS }}" \
+                -e PORT="3009" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
             fi
 
-            # Detener y eliminar contenedores anteriores
-            sudo docker stop reports-user occupancy-reports || true
-            sudo docker rm reports-user occupancy-reports || true
-
-            # Descargar imágenes actualizadas
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
-
-            # Ejecutar reports-user (PostgreSQL)
-            sudo docker run -d --name reports-user -p 3009:3009 \
-            -e DB_URL="${{ secrets.DB_URL_POSTGRES}}" \
-            -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES}}" \
-            -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES}}" \
-            -e PORT="3009" \
-            ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
-
-            # Ejecutar occupancy-reports (MongoDB + Kafka)
-            sudo docker run -d --name occupancy-reports -p 6000:6000 \
-            -e MONGO_URI="${{ secrets.MONGO_URI_REPORT}}" \
-            -e MONGO_DB="${{ secrets.MONGO_DB_REPORT}}" \
-            -e MONGO_COLLECTION="${{ secrets.MONGO_COLLECTION_REPORT}}" \
-            -e KAFKA_BROKER="${{ secrets.KAFKA_BROKER }}" \
-            -e KAFKA_TOPIC="${{ secrets.KAFKA_TOPIC }}" \
-            -e KAFKA_USERNAME="${{ secrets.KAFKA_USERNAME }}" \
-            -e KAFKA_PASSWORD="${{ secrets.KAFKA_PASSWORD }}" \
-            -e PORT="6000" \
-            ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
+            # OCCUPANCY REPORTS
+            if [[ "${{ steps.changes.outputs.occupancyReports }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
+              sudo docker stop occupancy-reports || true
+              sudo docker rm occupancy-reports || true
+              sudo docker run -d --name occupancy-reports -p 6000:6000 \
+                -e MONGO_URI="${{ secrets.MONGO_URI_REPORT }}" \
+                -e MONGO_DB="${{ secrets.MONGO_DB_REPORT }}" \
+                -e MONGO_COLLECTION="${{ secrets.MONGO_COLLECTION_REPORT }}" \
+                -e PORT="6000" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
+            fi

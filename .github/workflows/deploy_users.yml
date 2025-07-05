@@ -4,13 +4,29 @@ on:
   push:
     branches:
       - test
+    paths:
+      - 'backend/User_Management/**'
 
 jobs:
-  build-and-push:
+  build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout código
+      - name: Checkout repo
         uses: actions/checkout@v3
+
+      - name: Detect changed microservices
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            login_auth: backend/User_Management/login_auth/**
+            registerUser: backend/User_Management/registerUser/**
+            resetPassword: backend/User_Management/resetPassword/**
+            sendRecoveryCode: backend/User_Management/sendRecoveryCode/**
+            updateProfile: backend/User_Management/updateProfile/**
+            userProfile: backend/User_Management/userProfile/**
+            findUser: backend/User_Management/findUser/**
+            getUserByUsername: backend/User_Management/getUserByUsername/**
 
       - name: Log in to DockerHub
         uses: docker/login-action@v2
@@ -18,93 +34,97 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Build and push UserManagement images
-        run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1 ./backend/User_Management/login_auth
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1 ./backend/User_Management/recoveryPassword
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1 ./backend/User_Management/registerUser
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5 ./backend/User_Management/userProfiles
-
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
-          docker push ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
-
-  deploy:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-    steps:
-      - name: Deploy UserManagement to AWS EC2
+      - name: Deploy to EC2
+        if: success()
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.HOST_DNS_USERS }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY_USERS }}
           script: |
-            if ! command -v docker &> /dev/null
-            then
-              sudo apt update
-              sudo apt install -y docker.io
-              sudo systemctl start docker
-              sudo systemctl enable docker
-              sudo usermod -aG docker ubuntu
+            sudo apt update && sudo apt install -y docker.io || true
+            sudo systemctl start docker
+            sudo docker system prune -af
+
+            # LOGIN AUTH
+            if [[ "${{ steps.changes.outputs.login_auth }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
+              sudo docker run -d --name login-auth -p 5000:5000 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL}}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
             fi
 
-            # Detener y eliminar contenedores antiguos
-            sudo docker stop login-auth recovery-password register-user userprofileservice || true
-            sudo docker rm login-auth recovery-password register-user userprofileservice || true
+            # REGISTER USER
+            if [[ "${{ steps.changes.outputs.registerUser }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+              sudo docker run -d --name register-user -p 5001:5001 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+            fi
 
-            # Descargar imágenes actualizadas
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/recovery-password:v1
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
-            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+            # RESET PASSWORD
+            if [[ "${{ steps.changes.outputs.resetPassword }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1
+              sudo docker run -d --name reset-password -p 5006:5006 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                -e REDIS_HOST="${{ secrets.REDIS_HOST_USER }}" \
+                -e REDIS_PORT="${{ secrets.REDIS_PORT_USER }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1
+            fi
 
-            # Ejecutar contenedores con configuración de entorno
-            sudo docker run -d --name login-auth -p 5000:5000 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
+            # SEND RECOVERY CODE
+            if [[ "${{ steps.changes.outputs.sendRecoveryCode }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/send-recovery-code:v1
+              sudo docker run -d --name send-recovery -p 5005:5005 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                -e REDIS_HOST="${{ secrets.REDIS_HOST_USER }}" \
+                -e REDIS_PORT="${{ secrets.REDIS_PORT_USER }}" \
+                -e GMAIL_USER="${{ secrets.GMAIL_USER }}" \
+                -e GMAIL_APP_PASSWORD="${{ secrets.GMAIL_APP_PASSWORD }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/send-recovery-code:v1
+            fi
 
-            sudo docker run -d --name send-recovery -p 5005:5005 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/send-recovery:v1
+            # UPDATE PROFILE
+            if [[ "${{ steps.changes.outputs.updateProfile }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+              sudo docker run -d --name update-profile -p 5008:5008 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+            fi
 
-            sudo docker run -d --name register-user -p 5001:5001 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+            # USER PROFILE
+            if [[ "${{ steps.changes.outputs.userProfile }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/user-profile:v1
+              sudo docker run -d --name userprofileservice -p 5010:5010 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE}}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/user-profile:v1
+            fi
 
-            sudo docker run -d --name userprofileservice -p 5010:5010 \
-             -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
-             -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE}}" \
-            ${{ secrets.DOCKERHUB_USERNAME }}/userprofileservice:v5
+            # FIND USER
+            if [[ "${{ steps.changes.outputs.findUser }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+              sudo docker run -d --name find-user -p 5002:5002 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+            fi
 
-            sudo docker run -d --name reset-password -p 5006:5006 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1
-
-            sudo docker run -d --name update-profile -p 5008:5008 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
-
-
-            sudo docker run -d --name find-user -p 5002:5002 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
-
-            sudo docker run -d --name get-profile-user -p 5002:5002 \
-              -e DB_URL="${{ secrets.DB_URL_MYSQL }}" \
-              -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
-              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
-              ${{ secrets.DOCKERHUB_USERNAME }}/get-profile-user:v1
+            # GET PROFILE BY USERNAME
+            if [[ "${{ steps.changes.outputs.getUserByUsername }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+              sudo docker run -d --name get-profile-user -p 5007:5007 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+            fi
