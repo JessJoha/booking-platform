@@ -18,16 +18,21 @@ const swaggerOptions = {
       description: 'API documentation for the User Reports microservice',
     },
   },
-  apis: ['./src/routes/*.js'], // Scan for JSDoc comments in route files
+  apis: ['./src/routes/*.js'],
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use('/api/reports', reportRoutes);
 
-const PORT = process.env.PORT || 3009;
-app.listen(PORT, () => {
-  console.log(`reportsUser microservice running on port ${PORT}`);
-console.log(`Swagger API docs available at: http://localhost:${PORT}/api-docs`);
-});
+
+if (require.main === module) {
+  const PORT = process.env.PORT || 3009;
+  app.listen(PORT, () => {
+    console.log(`reportsUser microservice running on port ${PORT}`);
+    console.log(`Swagger API docs available at: http://localhost:${PORT}/api-docs`);
+  });
+}
+
+
+module.exports = app;

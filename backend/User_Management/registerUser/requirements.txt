@@ -8,4 +8,6 @@ bcrypt
 requests
 flask-cors
 flasgger
+unittest
+unittest.mock
 

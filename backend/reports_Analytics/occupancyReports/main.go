@@ -40,6 +40,6 @@ func main() {
 		port = "6000"
 	}
 
-	log.Printf("🌐 Listening on port %s", port)
+	log.Printf("Listening on port %s", port)
 	http.ListenAndServe(":"+port, r)
 }

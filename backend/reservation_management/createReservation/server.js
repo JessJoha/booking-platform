@@ -3,7 +3,6 @@ const sequelize = require('./src/config/db');
 const reservationRoutes = require('./src/routes/reservationRoutes'); 
 require('dotenv').config();
 
-// Swagger setup
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
@@ -16,7 +15,7 @@ const swaggerOptions = {
       description: 'API documentation for Reservation Management',
     },
   },
-  apis: ['./src/routes/*.js'], // Ajusta la ruta según donde estén tus rutas
+  apis: ['./src/routes/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
@@ -24,21 +23,24 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 const app = express();
 app.use(express.json());
 
-// Swagger docs route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use('/api', reservationRoutes);
 
 const PORT = process.env.PORT || 3001;
 
 
-sequelize.sync()
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Reservation server running on port ${PORT}`);
-      console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+if (require.main === module) {
+  sequelize.sync()
+    .then(() => {
+      app.listen(PORT, () => {
+        console.log(`Reservation server running on port ${PORT}`);
+        console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+      });
+    })
+    .catch((err) => {
+      console.error('Failed to connect to the database:', err);
     });
-  })
-  .catch((err) => {
-    console.error('Failed to connect to the database:', err);
-  });
+}
+
+
+module.exports = app;

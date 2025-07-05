@@ -15,6 +15,11 @@ jobs:
       - name: Checkout repo
         uses: actions/checkout@v3
 
+      - name: Run unit tests for UserManagement
+        run: |
+          pip install -r backend/User_Management/findUser/requirements.txt
+          python -m unittest discover -s backend/User_Management/findUser/tests
+
       - name: Detect changed microservices
         id: changes
         uses: dorny/paths-filter@v2

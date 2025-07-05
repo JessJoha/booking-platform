@@ -3,5 +3,8 @@ flask_sqlalchemy
 pymysql
 python-dotenv
 flask-cors
-flasgger
+flasgger==0.9.7.1
+unittest
+unittest.mock
+
 

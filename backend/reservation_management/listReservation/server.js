@@ -17,7 +17,7 @@ const swaggerOptions = {
       description: 'API documentation for List Reservations Microservice',
     },
   },
-  apis: ['./src/routes/*.js'], 
+  apis: ['./src/routes/*.js'],
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
@@ -25,15 +25,21 @@ app.use(express.json());
 
 // Swagger docs route
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
-
 app.use('/api', listRoutes);
 
-const PORT = process.env.PORT || 3004;
 
-sequelize.sync().then(() => {
-  console.log('Database synced');
-  app.listen(PORT, () => {
-    console.log(`List Reservations Microservice running on port ${PORT}`);
-    console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+if (require.main === module) {
+  const PORT = process.env.PORT || 3004;
+  sequelize.sync().then(() => {
+    console.log('Database synced');
+    app.listen(PORT, () => {
+      console.log(`List Reservations Microservice running on port ${PORT}`);
+      console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+    });
+  }).catch(err => {
+    console.error('Database connection error:', err);
   });
-});
+}
+
+
+module.exports = app;
