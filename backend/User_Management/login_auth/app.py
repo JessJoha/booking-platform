@@ -1,21 +1,26 @@
-from dotenv import load_dotenv
-from pathlib import Path
-load_dotenv(dotenv_path=Path('.') / '.env')
-
 from flask import Flask
 from flask_cors import CORS
-from config import Config
 from extensions import db
 from routes.routes import auth_bp
+from flasgger import Swagger
 import pymysql
 from sqlalchemy.exc import OperationalError
 from sqlalchemy import text
-from flasgger import Swagger  # <-- Add this import
+import os
+
 
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
-app.config.from_object(Config)
+
+
+if not app.config.get("TESTING"):
+    from dotenv import load_dotenv
+    from pathlib import Path
+    from config import Config
+
+    load_dotenv(dotenv_path=Path('.') / '.env')
+    app.config.from_object(Config)
 
 # Swagger configuration
 swagger = Swagger(app, template={
@@ -48,11 +53,11 @@ if __name__ == '__main__':
     with app.app_context():
         try:
             db.session.execute(text('SELECT 1'))
-            print("Successfully connected to the database.")
+            print("✅ Successfully connected to the database.")
         except OperationalError as e:
-            print("Failed to connect to the database:")
+            print("❌ Failed to connect to the database:")
             print(e)
 
         db.create_all()
 
-    app.run(debug=True, host='0.0.0.0', port=app.config['LOGIN_SERVICE_PORT'])
+    app.run(debug=True, host='0.0.0.0', port=app.config.get('LOGIN_SERVICE_PORT', 5000))

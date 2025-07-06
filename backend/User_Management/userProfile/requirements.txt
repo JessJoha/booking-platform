@@ -5,3 +5,4 @@ pyjwt
 pymongo
 flasgger
 flask
+mongomock

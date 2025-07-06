@@ -1,12 +1,15 @@
 from flask import Flask
+from flask_cors import CORS
+from flasgger import Swagger
 from config import Config
 from backend.User_Management.updateProfile.routes.update_Profile import update_bp
-from flasgger import Swagger 
 
 app = Flask(__name__)
+CORS(app)
+
 app.config.from_object(Config)
 
-# Swagger configuration
+
 swagger = Swagger(app, template={
     "swagger": "2.0",
     "info": {
@@ -15,6 +18,7 @@ swagger = Swagger(app, template={
         "version": "1.0.0"
     }
 })
+
 
 app.register_blueprint(update_bp, url_prefix="/profile")
 
@@ -32,4 +36,4 @@ def index():
     return 'updateProfileService is running', 200
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=Config.PROFILE_SERVICE_PORT)
+    app.run(debug=True, host='0.0.0.0', port=app.config.get("PROFILE_SERVICE_PORT", 5006))

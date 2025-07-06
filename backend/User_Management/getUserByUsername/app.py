@@ -1,12 +1,16 @@
 from flask import Flask
-from config import Config
 from routes.by_userRoute import user_bp
 from flasgger import Swagger
+import os
 
 app = Flask(__name__)
-app.config.from_object(Config)
 
-# Swagger configuration
+
+if not app.config.get("TESTING"):
+    from config import Config
+    app.config.from_object(Config)
+
+
 swagger = Swagger(app, template={
     "swagger": "2.0",
     "info": {
@@ -32,4 +36,5 @@ def index():
     return 'getUserByUsernameService is running', 200
 
 if __name__ == '__main__':
+    from config import Config  
     app.run(debug=True, host='0.0.0.0', port=Config.PROFILE_SERVICE_PORT)

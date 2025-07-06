@@ -1,20 +1,23 @@
-from dotenv import load_dotenv
-from pathlib import Path
-load_dotenv(dotenv_path=Path('.') / '.env')
-
 from flask import Flask
 from flask_cors import CORS
-from config import Config
 from extensions import db
 from routes.reset_route import reset_bp
-from flasgger import Swagger  
+from flasgger import Swagger
+import os
 
 app = Flask(__name__)
-app.config.from_object(Config)
 CORS(app)
-db.init_app(app)
 
-# Swagger configuration
+
+if not app.config.get("TESTING"):
+    from dotenv import load_dotenv
+    from pathlib import Path
+    from config import Config
+
+    load_dotenv(dotenv_path=Path('.') / '.env')
+    app.config.from_object(Config)
+
+
 swagger = Swagger(app, template={
     "swagger": "2.0",
     "info": {
@@ -24,6 +27,8 @@ swagger = Swagger(app, template={
     }
 })
 
+
+db.init_app(app)
 app.register_blueprint(reset_bp, url_prefix="/recover")
 
 @app.route('/')
@@ -42,4 +47,4 @@ def index():
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True, host="0.0.0.0", port=Config.RESET_SERVICE_PORT)
+    app.run(debug=True, host="0.0.0.0", port=app.config.get("RESET_SERVICE_PORT", 5004))

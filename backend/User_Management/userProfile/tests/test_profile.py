@@ -1,8 +1,6 @@
 import unittest
 from unittest.mock import patch
 from app import app
-from model.userProfile import UserProfile
-import json
 import jwt
 from config import Config
 import mongomock
@@ -12,14 +10,15 @@ def generate_token(username="testuser", email="test@example.com", user_id=1):
     payload = {"username": username, "email": email, "user_id": user_id}
     return jwt.encode(payload, Config.JWT_SECRET, algorithm="HS256")
 
+
 class UserProfileTestCase(unittest.TestCase):
     def setUp(self):
         self.client = app.test_client()
         self.token = generate_token()
         self.headers = {"Authorization": f"Bearer {self.token}"}
 
-       
-        self.patcher = patch("extensions.collection", new=mongomock.MongoClient().db.collection)
+        # 🔧 IMPORTANTE: parchea la colección usada en profileRoutes
+        self.patcher = patch("routes.profileRoutes.collection", new=mongomock.MongoClient().db.collection)
         self.mock_collection = self.patcher.start()
 
     def tearDown(self):
@@ -31,7 +30,6 @@ class UserProfileTestCase(unittest.TestCase):
         self.assertIn("profile", response.get_json())
 
     def test_init_profile_already_exists(self):
-        # Inserta perfil previo
         self.mock_collection.insert_one({
             "username": "testuser",
             "email": "test@example.com",
@@ -72,6 +70,7 @@ class UserProfileTestCase(unittest.TestCase):
         response = self.client.get("/profile/")
         self.assertEqual(response.status_code, 401)
         self.assertIn("Unauthorized", response.get_json()["error"])
+
 
 if __name__ == "__main__":
     unittest.main()
