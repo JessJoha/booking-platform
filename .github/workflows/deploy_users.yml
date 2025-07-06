@@ -6,7 +6,7 @@ on:
       - test
     paths:
       - 'backend/User_Management/**'
-      - '.github/workflows/deploy_usermanagement.yml'
+      - '.github/workflows/deploy_users.yml'
 
 jobs:
   build-and-deploy:
