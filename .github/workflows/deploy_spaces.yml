@@ -6,7 +6,7 @@ on:
       - test
     paths:
       - 'backend/space_management/**'
-      - '.github/workflows/deploy_spacemanagement.yml'
+      - '.github/workflows/deploy_spaces.yml'
 
 jobs:
   build-and-deploy:

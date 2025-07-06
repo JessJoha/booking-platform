@@ -6,7 +6,7 @@ on:
       - test
     paths:
       - 'backend/reportsAnalytics/**'
-      - '.github/workflows/deploy_reportsanalytics.yml'
+      - '.github/workflows/deploy_reports.yml'
 
 jobs:
   build-and-deploy:
