@@ -3,13 +3,13 @@ from unittest.mock import patch, MagicMock
 import sys
 import os
 
-# Agrega el path del microservicio
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import app
 
 class UpdateProfileTestCase(unittest.TestCase):
     def setUp(self):
+        app.config['TESTING'] = True
         self.client = app.test_client()
 
     @patch('routes.update_Profile.get_username_from_token')
@@ -17,17 +17,15 @@ class UpdateProfileTestCase(unittest.TestCase):
     def test_update_profile_success(self, mock_collection, mock_get_username):
         mock_get_username.return_value = 'johndoe'
 
-        # Simula dos llamadas a find_one(): una antes de actualizar, otra después
         mock_collection.find_one.side_effect = [
-            {"username": "johndoe"},  # antes del update
+            {"username": "johndoe"},
             {
                 "username": "johndoe",
                 "phone": "+1234567890",
                 "avatar": "https://example.com/avatar.jpg",
                 "description": "Updated profile"
-            }  # después del update
+            }
         ]
-
         mock_collection.update_one.return_value = MagicMock()
 
         response = self.client.put(
@@ -41,8 +39,9 @@ class UpdateProfileTestCase(unittest.TestCase):
         )
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.get_json()["message"], "Profile updated successfully")
-        self.assertIn("profile", response.get_json())
+        response_data = response.get_json()
+        self.assertEqual(response_data["message"], "Profile updated successfully")
+        self.assertIn("profile", response_data)
 
     @patch('routes.update_Profile.get_username_from_token')
     def test_update_profile_unauthorized(self, mock_get_username):
@@ -53,6 +52,7 @@ class UpdateProfileTestCase(unittest.TestCase):
             json={"description": "Test"},
             headers={"Authorization": "Bearer invalidtoken"}
         )
+
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json()["error"], "Unauthorized")
 
@@ -67,6 +67,7 @@ class UpdateProfileTestCase(unittest.TestCase):
             json={"description": "Doesn't matter"},
             headers={"Authorization": "Bearer mocktoken"}
         )
+
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json()["error"], "Profile not found")
 
@@ -78,12 +79,24 @@ class UpdateProfileTestCase(unittest.TestCase):
 
         response = self.client.put(
             '/profile/',
-            json={},  # No campos válidos
+            json={},  # No valid fields
             headers={"Authorization": "Bearer mocktoken"}
         )
+
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json()["error"], "No valid fields to update")
 
+    @patch('routes.update_Profile.get_username_from_token')
+    def test_no_authorization_header(self, mock_get_username):
+        mock_get_username.return_value = None
+
+        response = self.client.put(
+            '/profile/',
+            json={"description": "Test"}
+        )
+
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json()["error"], "Unauthorized")
 
 if __name__ == '__main__':
-    unittest.main()
+    unittest.main(verbosity=2)
