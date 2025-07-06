@@ -12,11 +12,13 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app)
 
-
 if os.environ.get("TESTING") != "1":
-    app.config.from_object(Config)
+        app.config.from_object(Config)
+else:
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'  
 
 db.init_app(app)
+
 
 # Swagger configuration
 swagger = Swagger(app, template={
