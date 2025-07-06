@@ -1,3 +1,4 @@
+# Build stage
 FROM golang:1.23 as builder
 
 WORKDIR /app
@@ -8,14 +9,17 @@ RUN go mod download
 COPY . .
 RUN go mod tidy
 
-RUN go build -o createSpace main.go
+# Build a statically linked binary for Linux
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o createSpace main.go
 
-# Stage 2: Final image
-FROM debian:bullseye-slim
+# Final image: use scratch for minimal size and no GLIBC dependency
+FROM scratch
 
 WORKDIR /root/
 
 COPY --from=builder /app/createSpace .
+COPY --from=builder /app/.env .
+COPY --from=builder /app/docs ./docs
 
 EXPOSE 3008
 
