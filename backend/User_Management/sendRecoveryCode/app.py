@@ -9,14 +9,17 @@ app = Flask(__name__)
 CORS(app)
 
 
-if not app.config.get("TESTING"):
+if os.getenv('TESTING') == 'True':
+    app.config['TESTING'] = True
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+elif not app.config.get("TESTING"):
     from dotenv import load_dotenv
     from pathlib import Path
     from config import Config
 
     load_dotenv(dotenv_path=Path('.') / '.env')
     app.config.from_object(Config)
-
 
 swagger = Swagger(app, template={
     "swagger": "2.0",
@@ -26,7 +29,6 @@ swagger = Swagger(app, template={
         "version": "1.0.0"
     }
 })
-
 
 db.init_app(app)
 app.register_blueprint(recover_bp, url_prefix="/recover")

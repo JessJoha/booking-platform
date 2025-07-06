@@ -5,15 +5,36 @@ import os
 from dotenv import load_dotenv
 from pathlib import Path
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-
 
 load_dotenv(dotenv_path=Path('.') / '.env')
 
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+
+os.environ['TESTING'] = 'True'
+os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+
 from app import app
+
 class SendRecoveryCodeTestCase(unittest.TestCase):
     def setUp(self):
+      
+        app.config['TESTING'] = True
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        
         self.client = app.test_client()
+        
+        
+        with app.app_context():
+            from extensions import db
+            db.create_all()
+
+    def tearDown(self):
+        
+        with app.app_context():
+            from extensions import db
+            db.drop_all()
 
     @patch('routes.requestRoute.send_email')
     @patch('routes.requestRoute.redis_client')
