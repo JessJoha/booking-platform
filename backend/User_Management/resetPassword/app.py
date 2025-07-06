@@ -18,11 +18,6 @@ CORS(app)
 app.config.from_object(Config)
 
 
-print("🔍 REDIS_HOST =", os.environ.get("REDIS_HOST"))
-print("🔍 REDIS_PORT =", os.environ.get("REDIS_PORT"))
-print("🔍 DB_URL =", app.config.get("SQLALCHEMY_DATABASE_URI"))
-
-
 db.init_app(app)
 
 
