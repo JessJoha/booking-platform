@@ -179,6 +179,10 @@ jobs:
 
             # FIND USER
             if [[ "${{ steps.changes.outputs.findUser }}" == 'true' ]]; then
+              echo "🚀 Deploying find-user..."
+              sudo docker stop find-user || true
+              sudo docker rm find-user || true
+
               sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
               sudo docker run -d --name find-user -p 5002:5002 \
                 -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
