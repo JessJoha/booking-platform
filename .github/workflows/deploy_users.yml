@@ -132,7 +132,7 @@ jobs:
             fi
 
             # RESET PASSWORD
-            if [[ "${{ steps.changes.outputs.resetPassword }}" == 'true' ]]; then
+            if [[ "true" == 'true' ]]; then
               sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1
               sudo docker stop reset-password || true
               sudo docker rm reset-password || true
