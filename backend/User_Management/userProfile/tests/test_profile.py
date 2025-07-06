@@ -5,7 +5,7 @@ import os
 import jwt
 import mongomock
 
-# Agrega path del microservicio
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import app
@@ -23,7 +23,7 @@ class UserProfileTestCase(unittest.TestCase):
         self.token = generate_token()
         self.headers = {"Authorization": f"Bearer {self.token}"}
 
-        # Simular colección Mongo con mongomock
+       
         self.patcher = patch("routes.profileRoutes.collection", new=mongomock.MongoClient().db.collection)
         self.mock_collection = self.patcher.start()
 
