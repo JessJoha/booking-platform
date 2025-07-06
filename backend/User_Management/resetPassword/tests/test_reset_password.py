@@ -1,98 +1,53 @@
 import unittest
+from unittest.mock import patch, MagicMock
 import sys
 import os
-from unittest.mock import patch, MagicMock
+from dotenv import load_dotenv
+from pathlib import Path
+
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 
-os.environ['REDIS_HOST'] = 'localhost'
-os.environ['REDIS_PORT'] = '6379'
-os.environ['REDIS_DB'] = '0'
-os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-os.environ['SECRET_KEY'] = 'test-secret-key'
-os.environ['TESTING'] = '1'  
+load_dotenv(dotenv_path=Path('..') / '.env')
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from app import app
 
 
-try:
-    from app import app
-except ImportError:
-  
-    from flask import Flask
-    app = Flask(__name__)
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'test-secret-key'
-   
-    from routes.reset_route import reset_bp
-    app.register_blueprint(reset_bp, url_prefix='/recover')
-
-class ResetPasswordTestCase(unittest.TestCase):
+class SendRecoveryCodeTestCase(unittest.TestCase):
     def setUp(self):
-        self.client = app.test_client()
         app.config['TESTING'] = True
+        self.client = app.test_client()
 
-    @patch('routes.reset_route.redis_client')
-    @patch('routes.reset_route.User')
-    @patch('routes.reset_route.db')
-    def test_reset_password_success(self, mock_db, mock_user_class, mock_redis):
-       
-        mock_redis.get.return_value = "123456"
-        
-        # Mock user
+    @patch('routes.requestRoute.send_email')
+    @patch('routes.requestRoute.redis_client')
+    @patch('routes.requestRoute.User')
+    def test_send_code_success(self, mock_user_class, mock_redis, mock_send_email):
+      
         mock_user = MagicMock()
         mock_user_class.query.filter_by.return_value.first.return_value = mock_user
+
         
-        payload = {
-            "email": "johndoe@email.com",
-            "code": "123456",
-            "new_password": "myNewPassword123"
-        }
-        
-        response = self.client.post("/recover/reset", json=payload)
+        response = self.client.post('/recover/request', json={
+            "email": "johndoe@email.com"
+        })
+
+      
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.json["message"], "Password successfully reset")
-        mock_user.set_password.assert_called_once_with("myNewPassword123")
-        mock_db.session.commit.assert_called_once()
-        mock_redis.delete.assert_called_once_with("recover:johndoe@email.com")
+        self.assertEqual(response.get_json()["message"], "Recovery code sent via email")
+        mock_redis.setex.assert_called_once()
+        mock_send_email.assert_called_once()
 
-    @patch('routes.reset_route.redis_client')
-    def test_reset_password_code_not_found(self, mock_redis):
-        mock_redis.get.return_value = None
-        
-        response = self.client.post("/recover/reset", json={
-            "email": "test@example.com",
-            "code": "000000",
-            "new_password": "newpass"
-        })
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json["error"], "Code expired or not found")
-
-    @patch('routes.reset_route.redis_client')
-    def test_reset_password_invalid_code(self, mock_redis):
-        mock_redis.get.return_value = "999999"
-        
-        response = self.client.post("/recover/reset", json={
-            "email": "test@example.com",
-            "code": "000000",
-            "new_password": "newpass"
-        })
-        self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json["error"], "Invalid recovery code")
-
-    @patch('routes.reset_route.redis_client')
-    @patch('routes.reset_route.User')
-    def test_reset_password_user_not_found(self, mock_user_class, mock_redis):
-        mock_redis.get.return_value = "123456"
+    @patch('routes.requestRoute.User')
+    def test_send_code_user_not_found(self, mock_user_class):
         mock_user_class.query.filter_by.return_value.first.return_value = None
-        
-        response = self.client.post("/recover/reset", json={
-            "email": "test@example.com",
-            "code": "123456",
-            "new_password": "newpass"
+
+        response = self.client.post('/recover/request', json={
+            "email": "unknown@email.com"
         })
+
         self.assertEqual(response.status_code, 404)
-        self.assertEqual(response.json["error"], "User not found")
+        self.assertEqual(response.get_json()["error"], "User not found")
+
 
 if __name__ == "__main__":
     unittest.main()
