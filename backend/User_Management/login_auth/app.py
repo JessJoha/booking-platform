@@ -4,24 +4,24 @@ from extensions import db
 from routes.routes import auth_bp
 from flasgger import Swagger
 import pymysql
-from sqlalchemy.exc import OperationalError
-from sqlalchemy import text
+from config import Config
+from pathlib import Path
+from dotenv import load_dotenv
 import os
-
 
 pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 
 
-from dotenv import load_dotenv
-from pathlib import Path
-from config import Config
-
 load_dotenv(dotenv_path=Path('.') / '.env')
 app.config.from_object(Config)
 
-# Swagger configuration
+
+CORS(app)
+db.init_app(app)
+
+
 swagger = Swagger(app, template={
     "swagger": "2.0",
     "info": {
@@ -31,32 +31,20 @@ swagger = Swagger(app, template={
     }
 })
 
-CORS(app)
-db.init_app(app)
+
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 @app.route('/')
 def index():
-    """
-    Health check endpoint.
-    ---
-    responses:
-      200:
-        description: Service is running
-        examples:
-          text: login_auth is running
-    """
     return 'login_auth is running', 200
 
 if __name__ == '__main__':
     with app.app_context():
         try:
-            db.session.execute(text('SELECT 1'))
-            print("Successfully connected to the database.")
-        except OperationalError as e:
-            print("Failed to connect to the database:")
+            db.create_all()
+            print("Connected to database and ensured tables exist.")
+        except Exception as e:
+            print("Error while connecting to database or creating tables:")
             print(e)
-
-        db.create_all()
 
     app.run(debug=True, host='0.0.0.0', port=app.config.get('LOGIN_SERVICE_PORT', 5000))
