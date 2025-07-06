@@ -149,6 +149,8 @@ jobs:
             # RESET PASSWORD
             if [[ "${{ steps.changes.outputs.resetPassword }}" == 'true' ]]; then
               sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1
+              sudo docker stop reset-password || true
+              sudo docker rm reset-password || true
               sudo docker run -d --name reset-password -p 5006:5006 \
                 -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
                 -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
