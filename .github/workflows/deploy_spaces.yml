@@ -15,19 +15,21 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-      - name: Run unit tests for SpaceManagement
-        run: |
-          # createSpace
-          go test ./backend/space_management/createSpace/tests
+      - name: Run unit tests for createSpace
+        working-directory: backend/space_management/createSpace
+        run: go test ./tests
 
-          # deleteSpace
-          go test ./backend/space_management/deleteSpace/tests
+      - name: Run unit tests for deleteSpace
+        working-directory: backend/space_management/deleteSpace
+        run: go test ./tests
 
-          # updateSpace
-          go test ./backend/space_management/updateSpace/tests
+      - name: Run unit tests for updateSpace
+        working-directory: backend/space_management/updateSpace
+        run: go test ./tests
 
-          # listSpace
-          go test ./backend/space_management/listSpace/tests
+      - name: Run unit tests for listSpace
+        working-directory: backend/space_management/listSpace
+        run: go test ./tests
 
       - name: Detect changed microservices
         id: changes
