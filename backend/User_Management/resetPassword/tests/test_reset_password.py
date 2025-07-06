@@ -3,7 +3,14 @@ import sys
 import os
 from unittest.mock import patch, MagicMock
 
-# Add the parent directory to the path so we can import the app
+
+os.environ['REDIS_HOST'] = 'localhost'
+os.environ['REDIS_PORT'] = '6379'
+os.environ['REDIS_DB'] = '0'
+os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+os.environ['SECRET_KEY'] = 'test-secret-key'
+
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 try:
@@ -12,7 +19,9 @@ except ImportError:
     
     from flask import Flask
     app = Flask(__name__)
-    
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+   
     from routes.reset_route import reset_bp
     app.register_blueprint(reset_bp, url_prefix='/recover')
 
