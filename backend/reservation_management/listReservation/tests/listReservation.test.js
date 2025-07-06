@@ -63,4 +63,10 @@ describe('GET /api/reservations', () => {
     expect(response.body.message).toBe('Error retrieving reservations');
   });
 
+  const sequelize = require('../src/config/db');
+
+  afterAll(async () => {
+  await sequelize.close();
+});
+
 });

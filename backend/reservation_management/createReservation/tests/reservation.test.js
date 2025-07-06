@@ -18,7 +18,6 @@ jest.mock('../src/webhook/webhookClient', () => ({
   sendWebhookEvent: jest.fn(),
 }));
 
-// Mock del modelo Booking
 jest.mock('../src/model/reservationModel', () => {
   const originalModule = jest.requireActual('../src/model/reservationModel');
   return {
@@ -98,4 +97,10 @@ describe('POST /reservations', () => {
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toMatch(/error creating reservation/i);
   });
+
+  const sequelize = require('../src/config/db');
+
+  afterAll(async () => {
+    await sequelize.close();
+});
 });

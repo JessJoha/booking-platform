@@ -28,9 +28,12 @@ app.use('/api', reservationRoutes);
 
 const PORT = process.env.PORT || 3001;
 
-
 if (require.main === module) {
-  sequelize.sync()
+  sequelize.authenticate()
+    .then(() => {
+      console.log('✅ Connection to database established successfully.');
+      return sequelize.sync();
+    })
     .then(() => {
       app.listen(PORT, () => {
         console.log(`Reservation server running on port ${PORT}`);
@@ -41,6 +44,5 @@ if (require.main === module) {
       console.error('Failed to connect to the database:', err);
     });
 }
-
 
 module.exports = app;

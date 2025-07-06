@@ -67,4 +67,11 @@ describe('DELETE /api/reservations/:id', () => {
     expect(response.statusCode).toBe(500);
     expect(response.body.message).toBe('Error deleting reservation');
   });
+
+  const sequelize = require('../src/config/db');
+
+afterAll(async () => {
+  await sequelize.close();
+});
+
 });

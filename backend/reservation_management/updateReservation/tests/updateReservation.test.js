@@ -103,4 +103,10 @@ describe('PUT /api/reservations/:id', () => {
     expect(response.body.message).toBe('Error updating reservation');
   });
 
+  const sequelize = require('../src/config/db');
+
+  afterAll(async () => {
+  await sequelize.close();
+});
+
 });
