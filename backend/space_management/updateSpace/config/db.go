@@ -15,19 +15,16 @@ import (
 var DB *gorm.DB
 
 func InitDB() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: .env file not found, using default environment variables")
-	}
+	_ = godotenv.Load()
 
 	if os.Getenv("TESTING") == "true" {
 		fmt.Println("TESTING mode: initializing SQLite in-memory DB")
-		sqliteDB, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+		db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 		if err != nil {
-			log.Fatal("Failed to connect to in-memory SQLite DB:", err)
+			log.Fatal("Failed to connect to SQLite in-memory:", err)
 		}
-		sqliteDB.AutoMigrate(&model.Space{})
-		DB = sqliteDB
+		db.AutoMigrate(&model.Space{})
+		DB = db
 		return
 	}
 
@@ -37,13 +34,14 @@ func InitDB() {
 	dbPort := os.Getenv("DB_PORT")
 	dbName := os.Getenv("DB_NAME")
 
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true", dbUser, dbPass, dbHost, dbPort, dbName)
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true",
+		dbUser, dbPass, dbHost, dbPort, dbName)
 
-	database, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
-		log.Fatal("Error connecting to database: ", err)
+		log.Fatal("Error connecting to MySQL:", err)
 	}
 
-	database.AutoMigrate(&model.Space{})
-	DB = database
+	db.AutoMigrate(&model.Space{})
+	DB = db
 }
