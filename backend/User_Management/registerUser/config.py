@@ -10,4 +10,4 @@ class Config:
     ACCESS_TOKEN_EXPIRATION = int(os.environ.get('ACCESS_TOKEN_EXPIRATION', 3600))
     DB_NAME = os.environ.get('DB_NAME')
 
-    print("DB_URL:", os.environ.get('DB_URL'))
+ 

@@ -82,7 +82,7 @@ class RegisterUserTestCase(unittest.TestCase):
         db.session.add(user)
         db.session.commit()
         
-        # Intentar registrar otro usuario con el mismo phone
+
         response = self.client.post('/auth/users/register', json={
             "username": "testuser2",
             "password": "testpass123",
