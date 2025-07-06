@@ -8,6 +8,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"gorm.io/driver/mysql"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -20,7 +21,13 @@ func InitDB() {
 	}
 
 	if os.Getenv("TESTING") == "true" {
-		fmt.Println("TESTING mode: skipping real DB connection")
+		fmt.Println("TESTING mode: initializing SQLite in-memory DB")
+		sqliteDB, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+		if err != nil {
+			log.Fatal("Failed to connect to in-memory SQLite DB:", err)
+		}
+		sqliteDB.AutoMigrate(&model.Space{})
+		DB = sqliteDB
 		return
 	}
 
@@ -38,6 +45,5 @@ func InitDB() {
 	}
 
 	database.AutoMigrate(&model.Space{})
-
 	DB = database
 }
