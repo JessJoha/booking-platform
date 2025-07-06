@@ -37,14 +37,14 @@ swagger = Swagger(app, template={
     }
 })
 
-# Rutas
+
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 @app.route('/')
 def index():
     return 'login_auth is running', 200
 
-# Ejecutar la app solo si es el archivo principal
+
 if __name__ == '__main__':
     with app.app_context():
         try:

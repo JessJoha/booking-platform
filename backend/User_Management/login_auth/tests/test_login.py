@@ -44,7 +44,7 @@ class LoginAuthTestCase(unittest.TestCase):
         db.session.commit()
 
     def tearDown(self):
-        # Limpiar la base de datos y el contexto
+       
         db.session.remove()
         db.drop_all()
         self.app_context.pop()

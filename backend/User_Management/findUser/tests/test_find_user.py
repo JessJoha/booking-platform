@@ -5,9 +5,10 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
+os.environ['TESTING'] = '1'
+
 from app import app, db
 from model.findModel import User
-
 
 class FindUserTestCase(unittest.TestCase):
     def setUp(self):
