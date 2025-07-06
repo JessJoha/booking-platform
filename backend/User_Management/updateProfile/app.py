@@ -2,7 +2,7 @@ from flask import Flask
 from flask_cors import CORS
 from flasgger import Swagger
 from config import Config
-from backend.User_Management.updateProfile.routes.update_Profile import update_bp
+from routes.update_Profile import update_bp
 
 app = Flask(__name__)
 CORS(app)
