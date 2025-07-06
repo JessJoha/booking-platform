@@ -1,10 +1,13 @@
 import unittest
 import sys
 import os
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
-from findUser.app import app, db
+# Agrega la carpeta findUser al path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from app import app, db
 from model.findModel import User
+
 
 class FindUserTestCase(unittest.TestCase):
     def setUp(self):

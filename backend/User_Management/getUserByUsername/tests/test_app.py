@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import patch  
+from unittest.mock import patch
 import sys
 import os
 
@@ -13,7 +13,7 @@ class GetUserByUsernameTestCase(unittest.TestCase):
         self.app = app.test_client()
         self.app.testing = True
 
-    @patch('routes.by_userRoute.collection')
+    @patch('routes.by_userRoute.collection') 
     def test_get_user_found(self, mock_collection):
         mock_user = {
             "username": "johndoe",

@@ -2,12 +2,14 @@ import unittest
 import bcrypt
 import sys
 import os
+from unittest.mock import patch
+
+# Agrega el path del microservicio
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import app, db
 from models.model import User
 from config import Config
-from unittest.mock import patch
 
 class TestConfig(Config):
     TESTING = True
@@ -32,7 +34,7 @@ class LoginAuthTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @patch('routes.routes.requests.post')
+    @patch('routes.routes.requests.post')  # Ajustar según el archivo donde esté el requests
     def test_login_successful(self, mock_post):
         mock_post.return_value.status_code = 201
         payload = {

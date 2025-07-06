@@ -1,5 +1,11 @@
 import unittest
 from unittest.mock import patch, MagicMock
+import sys
+import os
+
+# Agrega el path del microservicio
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from app import app
 
 class UpdateProfileTestCase(unittest.TestCase):
@@ -11,14 +17,15 @@ class UpdateProfileTestCase(unittest.TestCase):
     def test_update_profile_success(self, mock_collection, mock_get_username):
         mock_get_username.return_value = 'johndoe'
 
+        # Simula dos llamadas a find_one(): una antes de actualizar, otra después
         mock_collection.find_one.side_effect = [
-            {"username": "johndoe"},  
+            {"username": "johndoe"},  # antes del update
             {
                 "username": "johndoe",
                 "phone": "+1234567890",
                 "avatar": "https://example.com/avatar.jpg",
                 "description": "Updated profile"
-            }  
+            }  # después del update
         ]
 
         mock_collection.update_one.return_value = MagicMock()
@@ -76,6 +83,7 @@ class UpdateProfileTestCase(unittest.TestCase):
         )
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json()["error"], "No valid fields to update")
+
 
 if __name__ == '__main__':
     unittest.main()

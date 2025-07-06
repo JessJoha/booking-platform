@@ -1,9 +1,15 @@
 import unittest
 from unittest.mock import patch
-from app import app
+import sys
+import os
 import jwt
-from config import Config
 import mongomock
+
+# Agrega path del microservicio
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from app import app
+from config import Config
 
 
 def generate_token(username="testuser", email="test@example.com", user_id=1):
@@ -17,7 +23,7 @@ class UserProfileTestCase(unittest.TestCase):
         self.token = generate_token()
         self.headers = {"Authorization": f"Bearer {self.token}"}
 
-        # 🔧 IMPORTANTE: parchea la colección usada en profileRoutes
+        # Simular colección Mongo con mongomock
         self.patcher = patch("routes.profileRoutes.collection", new=mongomock.MongoClient().db.collection)
         self.mock_collection = self.patcher.start()
 
