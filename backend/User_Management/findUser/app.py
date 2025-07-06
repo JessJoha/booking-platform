@@ -6,9 +6,6 @@ from routes.findRoutes import find_bp
 from config import Config  
 import os
 
-
-
-
 app = Flask(__name__)
 CORS(app)
 
@@ -28,7 +25,7 @@ swagger = Swagger(app, template={
     }
 })
 
-# ✅ Rutas
+
 app.register_blueprint(find_bp)
 
 @app.route('/')
