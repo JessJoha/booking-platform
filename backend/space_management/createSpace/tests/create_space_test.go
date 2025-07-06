@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"createSpace/config"
 	"createSpace/routes"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -23,9 +24,8 @@ func setupRouter() *gin.Engine {
 func TestCreateSpaceSuccess(t *testing.T) {
 
 	if err := godotenv.Load(); err != nil {
-		t.Log("Warning: .env file not found, using default environment variables")
+		log.Println("Warning: .env file not found, using default environment variables")
 	}
-
 	os.Setenv("TESTING", "true")
 
 	config.InitDB()

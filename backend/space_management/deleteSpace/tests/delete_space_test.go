@@ -3,6 +3,7 @@ package tests
 import (
 	"deleteSpace/config"
 	"deleteSpace/routes"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -10,6 +11,7 @@ import (
 	"testing"
 
 	"github.com/gin-gonic/gin"
+	"github.com/joho/godotenv"
 )
 
 func setupRouter() *gin.Engine {
@@ -20,6 +22,10 @@ func setupRouter() *gin.Engine {
 }
 
 func TestDeleteSpaceSuccess(t *testing.T) {
+
+	if err := godotenv.Load(); err != nil {
+		log.Println("Warning: .env file not found, using default environment variables")
+	}
 	os.Setenv("TESTING", "true")
 	config.InitDB()
 
@@ -37,6 +43,9 @@ func TestDeleteSpaceSuccess(t *testing.T) {
 }
 
 func TestDeleteSpaceNotFound(t *testing.T) {
+	if err := godotenv.Load("../.env"); err != nil {
+		t.Log("Warning: .env file not found, using default environment variables")
+	}
 	os.Setenv("TESTING", "true")
 	config.InitDB()
 
@@ -51,6 +60,9 @@ func TestDeleteSpaceNotFound(t *testing.T) {
 }
 
 func TestDeleteSpaceInvalidID(t *testing.T) {
+	if err := godotenv.Load("../.env"); err != nil {
+		t.Log("Warning: .env file not found, using default environment variables")
+	}
 	os.Setenv("TESTING", "true")
 	config.InitDB()
 

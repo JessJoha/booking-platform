@@ -42,8 +42,7 @@ func TestUpdateSpaceSuccess(t *testing.T) {
 
 	router := setupUpdateRouter()
 
-	// Evita insertar en DB real durante test
-	original := model.Space{ID: 1} // simula un espacio con ID fijo
+	original := model.Space{ID: 1}
 	updated := model.Space{
 		Name:        "New Name",
 		Location:    "New Location",
