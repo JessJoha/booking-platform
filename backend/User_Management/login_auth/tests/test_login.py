@@ -17,14 +17,20 @@ class TestConfig(Config):
 
 class LoginAuthTestCase(unittest.TestCase):
     def setUp(self):
+        # Configurar la aplicación para testing
         app.config.from_object(TestConfig)
-        with app.app_context():
-            db.init_app(app)  # Necesario porque en producción se salta si no hay URI
-            db.create_all()
-        self.app = app.test_client()
+        
+        # Crear el contexto de la aplicación
         self.app_context = app.app_context()
         self.app_context.push()
+        
+        # Crear las tablas (db ya está inicializado en app.py)
+        db.create_all()
+        
+        # Crear cliente de prueba
+        self.app = app.test_client()
 
+        # Crear usuario de prueba
         hashed_pw = bcrypt.hashpw('mypassword123'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         user = User(username='johndoe', password=hashed_pw, role='user',
                     email='johndoe@email.com', phone='+123456789')
@@ -32,11 +38,12 @@ class LoginAuthTestCase(unittest.TestCase):
         db.session.commit()
 
     def tearDown(self):
+        # Limpiar la base de datos y el contexto
         db.session.remove()
         db.drop_all()
         self.app_context.pop()
 
-    @patch('routes.routes.requests.post')  # Ajustar si usas otra ruta
+    @patch('routes.routes.requests.post')
     def test_login_successful(self, mock_post):
         mock_post.return_value.status_code = 201
         payload = {
@@ -62,6 +69,15 @@ class LoginAuthTestCase(unittest.TestCase):
         response = self.app.post('/auth/login', json=payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {'error': 'Username and password are required'})
+
+    def test_login_invalid_credentials(self):
+        payload = {
+            "username": "johndoe",
+            "password": "wrongpassword"
+        }
+        response = self.app.post('/auth/login', json=payload)
+        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.get_json(), {'error': 'Invalid credentials'})
 
 if __name__ == '__main__':
     unittest.main()
