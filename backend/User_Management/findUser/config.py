@@ -6,6 +6,5 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.environ.get('DB_URL') 
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     LOGIN_SERVICE_PORT = int(os.environ.get('FIND_USER_SERVICE_PORT', 5002))
-    LOG_LEVEL = os.environ.get('LOG_LEVEL', 'info')
     ACCESS_TOKEN_EXPIRATION = int(os.environ.get('ACCESS_TOKEN_EXPIRATION', 3600))
     DB_NAME = os.environ.get('DB_NAME')
