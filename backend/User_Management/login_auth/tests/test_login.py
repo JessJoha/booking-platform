@@ -3,34 +3,40 @@ import bcrypt
 import sys
 import os
 from unittest.mock import patch
+from flask import Flask
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from app import app, db
+from extensions import db
 from models.model import User
-from config import Config
-
-class TestConfig(Config):
-    TESTING = True
-    SQLALCHEMY_DATABASE_URI = 'sqlite:///:memory:'
-    SQLALCHEMY_TRACK_MODIFICATIONS = False
+from routes.routes import auth_bp
 
 class LoginAuthTestCase(unittest.TestCase):
     def setUp(self):
-        # Configurar la aplicación para testing
-        app.config.from_object(TestConfig)
         
-        # Crear el contexto de la aplicación
-        self.app_context = app.app_context()
+        self.app = Flask(__name__)
+        self.app.config['TESTING'] = True
+        self.app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+        self.app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+        self.app.config['SECRET_KEY'] = 'test-secret-key'
+        self.app.config['JWT_SECRET'] = 'test-jwt-secret'
+        self.app.config['ACCESS_TOKEN_EXPIRATION'] = 3600
+        
+        
+        self.app.register_blueprint(auth_bp, url_prefix='/auth')
+        
+        
+        self.app_context = self.app.app_context()
         self.app_context.push()
         
-        # Crear las tablas (db ya está inicializado en app.py)
+       
+        db.init_app(self.app)
         db.create_all()
         
-        # Crear cliente de prueba
-        self.app = app.test_client()
+        
+        self.client = self.app.test_client()
 
-        # Crear usuario de prueba
+        
         hashed_pw = bcrypt.hashpw('mypassword123'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
         user = User(username='johndoe', password=hashed_pw, role='user',
                     email='johndoe@email.com', phone='+123456789')
@@ -50,7 +56,7 @@ class LoginAuthTestCase(unittest.TestCase):
             "username": "johndoe",
             "password": "mypassword123"
         }
-        response = self.app.post('/auth/login', json=payload)
+        response = self.client.post('/auth/login', json=payload)
         self.assertEqual(response.status_code, 200)
         self.assertIn('token', response.get_json())
         self.assertEqual(response.get_json()['message'], 'Login successful')
@@ -60,13 +66,13 @@ class LoginAuthTestCase(unittest.TestCase):
             "username": "nouser",
             "password": "any"
         }
-        response = self.app.post('/auth/login', json=payload)
+        response = self.client.post('/auth/login', json=payload)
         self.assertEqual(response.status_code, 404)
         self.assertEqual(response.get_json(), {'error': 'User not found'})
 
     def test_login_missing_fields(self):
         payload = {"username": "johndoe"}
-        response = self.app.post('/auth/login', json=payload)
+        response = self.client.post('/auth/login', json=payload)
         self.assertEqual(response.status_code, 400)
         self.assertEqual(response.get_json(), {'error': 'Username and password are required'})
 
@@ -75,7 +81,7 @@ class LoginAuthTestCase(unittest.TestCase):
             "username": "johndoe",
             "password": "wrongpassword"
         }
-        response = self.app.post('/auth/login', json=payload)
+        response = self.client.post('/auth/login', json=payload)
         self.assertEqual(response.status_code, 401)
         self.assertEqual(response.get_json(), {'error': 'Invalid credentials'})
 

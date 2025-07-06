@@ -87,14 +87,17 @@ def login():
         return jsonify({'error': 'Invalid credentials'}), 401
 
    
+    jwt_secret = os.getenv('JWT_SECRET', 'default-secret-key')
+    access_token_expiration = int(os.getenv('ACCESS_TOKEN_EXPIRATION', '3600'))
+   
     payload = {
         'user_id': user.id,
         'username': user.username,
         'role': user.role,
-        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=int(os.getenv('ACCESS_TOKEN_EXPIRATION')))
+        'exp': datetime.datetime.utcnow() + datetime.timedelta(seconds=access_token_expiration)
     }
 
-    token = jwt.encode(payload, os.getenv('JWT_SECRET'), algorithm='HS256')
+    token = jwt.encode(payload, jwt_secret, algorithm='HS256')
     if isinstance(token, bytes):
         token = token.decode('utf-8')
 
