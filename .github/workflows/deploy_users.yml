@@ -121,6 +121,7 @@ jobs:
           host: ${{ secrets.HOST_DNS_USERS }}
           username: ubuntu
           key: ${{ secrets.EC2_SSH_KEY_USERS }}
+          port: 22
           script: |
             sudo apt update && sudo apt install -y docker.io || true
             sudo systemctl start docker
