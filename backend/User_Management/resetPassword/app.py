@@ -13,7 +13,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'test-secret-key')
 
-# Solo cargar configuración adicional si no estamos en modo testing
+
 if not os.environ.get('TESTING') and not app.config.get("TESTING"):
     from dotenv import load_dotenv
     from pathlib import Path
@@ -31,7 +31,7 @@ swagger = Swagger(app, template={
     }
 })
 
-# Inicializar extensiones
+
 db.init_app(app)
 app.register_blueprint(reset_bp, url_prefix="/recover")
 
