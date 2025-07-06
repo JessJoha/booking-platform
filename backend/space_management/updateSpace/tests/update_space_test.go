@@ -39,7 +39,7 @@ func TestUpdateSpaceSuccess(t *testing.T) {
 	_ = godotenv.Load("../.env")
 	os.Setenv("TESTING", "true")
 
-	config.InitDB() // <-- ¡Esto es lo que faltaba!
+	config.InitDB()
 
 	router := setupUpdateRouter()
 

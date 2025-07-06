@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: '18'
 
-      # TEST: createReservation
+      
       - name: Install dependencies for createReservation
         run: |
           cd backend/reservation_management/createReservation
@@ -31,7 +31,7 @@ jobs:
           cd backend/reservation_management/createReservation
           npm test
 
-      # TEST: deleteReservation
+      
       - name: Install dependencies for deleteReservation
         run: |
           cd backend/reservation_management/deleteReservation
@@ -42,7 +42,7 @@ jobs:
           cd backend/reservation_management/deleteReservation
           npm test
 
-      # TEST: listReservation
+      
       - name: Install dependencies for listReservation
         run: |
           cd backend/reservation_management/listReservation
@@ -53,7 +53,7 @@ jobs:
           cd backend/reservation_management/listReservation
           npm test
 
-      # TEST: updateReservation
+      
       - name: Install dependencies for updateReservation
         run: |
           cd backend/reservation_management/updateReservation
