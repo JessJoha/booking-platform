@@ -31,12 +31,12 @@ func TestCreateSpaceSuccess(t *testing.T) {
 	router := setupRouter()
 
 	payload := []byte(`{
-		"name": "Cancha Norte",
+		"name": "North Field",
 		"location": "Quito",
-		"type": "cesped",
-		"description": "Cancha para futbol 7",
+		"type": "turf",
+		"description": "7-a-side soccer field",
 		"capacity": 14
-	}`)
+		}`)
 
 	req, _ := http.NewRequest("POST", "/api/spaces", bytes.NewBuffer(payload))
 	req.Header.Set("Content-Type", "application/json")
