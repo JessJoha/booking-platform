@@ -95,20 +95,35 @@ jobs:
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1 ./backend/User_Management/getUserByUsername
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
 
+
+
       - name: Deploy to EC2
         if: success()
         uses: appleboy/ssh-action@master
         with:
-            host: ${{ secrets.HOST_DNS_USERS }}
-            username: ubuntu
-            key: ${{ secrets.EC2_SSH_KEY_USERS }}
-            port: 22
-            script: |
-              sudo apt update && sudo apt install -y docker.io || true
-              sudo systemctl start docker
-              docker ps -aq | xargs -r docker stop
-              docker ps -aq | xargs -r docker rm
-              echo "Connected successfully to EC2"
+          host: ${{ secrets.HOST_DNS_USERS }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_USERS }}
+          port: 22
+          script: |
+            sudo apt update && sudo apt install -y docker.io || true
+            sudo systemctl start docker
+
+            echo "..."
+            docker ps -aq | xargs -r docker stop
+            docker ps -aq | xargs -r docker rm
+
+            echo "🧹..."
+            docker image rm -f \
+              ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/send-recovery-code:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/user-profile:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1 \
+              ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1 || true
+
 
               # LOGIN AUTH
               if [[ "${{ steps.changes.outputs.login_auth }}" == 'true' ]]; then
