@@ -21,7 +21,9 @@ func setupRouter() *gin.Engine {
 }
 
 func TestCreateSpaceSuccess(t *testing.T) {
-	_ = godotenv.Load("../.env")
+	if err := godotenv.Load("../.env"); err != nil {
+		t.Log("Warning: .env file not found, using default environment variables")
+	}
 
 	os.Setenv("TESTING", "true")
 
