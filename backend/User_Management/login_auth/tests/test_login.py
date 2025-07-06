@@ -4,7 +4,6 @@ import sys
 import os
 from unittest.mock import patch
 
-# Agrega el path del microservicio
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from app import app, db
@@ -19,13 +18,16 @@ class TestConfig(Config):
 class LoginAuthTestCase(unittest.TestCase):
     def setUp(self):
         app.config.from_object(TestConfig)
+        with app.app_context():
+            db.init_app(app)  # Necesario porque en producción se salta si no hay URI
+            db.create_all()
         self.app = app.test_client()
         self.app_context = app.app_context()
         self.app_context.push()
-        db.create_all()
 
         hashed_pw = bcrypt.hashpw('mypassword123'.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
-        user = User(username='johndoe', password=hashed_pw, role='user', email='johndoe@email.com', phone='+123456789')
+        user = User(username='johndoe', password=hashed_pw, role='user',
+                    email='johndoe@email.com', phone='+123456789')
         db.session.add(user)
         db.session.commit()
 
@@ -34,7 +36,7 @@ class LoginAuthTestCase(unittest.TestCase):
         db.drop_all()
         self.app_context.pop()
 
-    @patch('routes.routes.requests.post')  # Ajustar según el archivo donde esté el requests
+    @patch('routes.routes.requests.post')  # Ajustar si usas otra ruta
     def test_login_successful(self, mock_post):
         mock_post.return_value.status_code = 201
         payload = {

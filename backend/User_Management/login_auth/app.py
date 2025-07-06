@@ -11,6 +11,7 @@ import os
 
 pymysql.install_as_MySQLdb()
 
+
 app = Flask(__name__)
 
 
@@ -19,9 +20,14 @@ app.config.from_object(Config)
 
 
 CORS(app)
-db.init_app(app)
 
 
+if app.config.get("SQLALCHEMY_DATABASE_URI"):
+    db.init_app(app)
+else:
+    print("⚠️ Warning: SQLALCHEMY_DATABASE_URI is not set.")
+
+# Swagger
 swagger = Swagger(app, template={
     "swagger": "2.0",
     "info": {
@@ -31,20 +37,21 @@ swagger = Swagger(app, template={
     }
 })
 
-
+# Rutas
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 @app.route('/')
 def index():
     return 'login_auth is running', 200
 
+# Ejecutar la app solo si es el archivo principal
 if __name__ == '__main__':
     with app.app_context():
         try:
             db.create_all()
             print("Connected to database and ensured tables exist.")
         except Exception as e:
-            print("Error while connecting to database or creating tables:")
+            print("Error connecting to database or creating tables:")
             print(e)
 
     app.run(debug=True, host='0.0.0.0', port=app.config.get('LOGIN_SERVICE_PORT', 5000))
