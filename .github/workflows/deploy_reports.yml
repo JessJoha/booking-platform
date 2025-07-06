@@ -68,7 +68,7 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY_REPORT }}
           script: |
             sudo apt update && sudo apt install -y docker.io || true
-            sudo systemctl start docker
+            sudo systemctl restart docker || sudo systemctl start docker
             docker ps -aq | xargs -r docker stop
             docker ps -aq | xargs -r docker rm
 
