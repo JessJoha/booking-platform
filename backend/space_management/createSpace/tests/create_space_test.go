@@ -21,7 +21,8 @@ func setupRouter() *gin.Engine {
 }
 
 func TestCreateSpaceSuccess(t *testing.T) {
-	if err := godotenv.Load("../.env"); err != nil {
+
+	if err := godotenv.Load(); err != nil {
 		t.Log("Warning: .env file not found, using default environment variables")
 	}
 
@@ -51,7 +52,7 @@ func TestCreateSpaceSuccess(t *testing.T) {
 }
 
 func TestCreateSpaceMissingFields(t *testing.T) {
-	os.Setenv("TESTING", "true") // 👈 Agregado aquí también (por si se ejecuta individual)
+	os.Setenv("TESTING", "true")
 
 	router := setupRouter()
 
