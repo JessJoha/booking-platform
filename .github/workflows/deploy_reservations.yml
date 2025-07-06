@@ -33,20 +33,26 @@ jobs:
 
       
       - name: Install dependencies for deleteReservation
-        run: |
-          cd backend/reservation_management/deleteReservation
-          npm install
+        run: npm install
+        working-directory: backend/reservation_management/deleteReservation
+
+      - name: Fix jest permissions for deleteReservation
+        run: chmod +x ./node_modules/.bin/jest
+        working-directory: backend/reservation_management/deleteReservation
 
       - name: Run unit tests for deleteReservation
-        run: |
-          cd backend/reservation_management/deleteReservation
-          npm test
+        run: npm test
+        working-directory: backend/reservation_management/deleteReservation
 
       
       - name: Install dependencies for listReservation
         run: |
           cd backend/reservation_management/listReservation
           npm install
+
+      - name: Fix jest permissions for listReservation
+        run: chmod +x ./node_modules/.bin/jest
+        working-directory: backend/reservation_management/listReservation
 
       - name: Run unit tests for listReservation
         run: |
@@ -58,6 +64,10 @@ jobs:
         run: |
           cd backend/reservation_management/updateReservation
           npm install
+
+      - name: Fix jest permissions for updateReservation
+        run: chmod +x ./node_modules/.bin/jest
+        working-directory: backend/reservation_management/updateReservation
 
       - name: Run unit tests for updateReservation
         run: |
