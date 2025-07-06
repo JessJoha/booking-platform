@@ -14,13 +14,12 @@ pymysql.install_as_MySQLdb()
 app = Flask(__name__)
 
 
-if not app.config.get("TESTING"):
-    from dotenv import load_dotenv
-    from pathlib import Path
-    from config import Config
+from dotenv import load_dotenv
+from pathlib import Path
+from config import Config
 
-    load_dotenv(dotenv_path=Path('.') / '.env')
-    app.config.from_object(Config)
+load_dotenv(dotenv_path=Path('.') / '.env')
+app.config.from_object(Config)
 
 # Swagger configuration
 swagger = Swagger(app, template={
@@ -53,9 +52,9 @@ if __name__ == '__main__':
     with app.app_context():
         try:
             db.session.execute(text('SELECT 1'))
-            print("✅ Successfully connected to the database.")
+            print("Successfully connected to the database.")
         except OperationalError as e:
-            print("❌ Failed to connect to the database:")
+            print("Failed to connect to the database:")
             print(e)
 
         db.create_all()
