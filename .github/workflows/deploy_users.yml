@@ -108,6 +108,7 @@ jobs:
             sudo systemctl start docker
             docker ps -aq | xargs -r docker stop
             docker ps -aq | xargs -r docker rm
+            echo "Connected successfully to EC2"
 
 
             # LOGIN AUTH
