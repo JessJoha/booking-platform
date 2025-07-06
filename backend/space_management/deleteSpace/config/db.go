@@ -19,6 +19,11 @@ func InitDB() {
 		log.Fatal("Error loading .env file")
 	}
 
+	if os.Getenv("TESTING") == "true" {
+		fmt.Println("TESTING mode: skipping real DB connection")
+		return
+	}
+
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")

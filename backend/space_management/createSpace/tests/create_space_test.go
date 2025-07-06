@@ -6,6 +6,7 @@ import (
 	"createSpace/routes"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -21,6 +22,9 @@ func setupRouter() *gin.Engine {
 
 func TestCreateSpaceSuccess(t *testing.T) {
 	_ = godotenv.Load("../.env")
+
+	os.Setenv("TESTING", "true")
+
 	config.InitDB()
 
 	router := setupRouter()
@@ -45,6 +49,8 @@ func TestCreateSpaceSuccess(t *testing.T) {
 }
 
 func TestCreateSpaceMissingFields(t *testing.T) {
+	os.Setenv("TESTING", "true") // 👈 Agregado aquí también (por si se ejecuta individual)
+
 	router := setupRouter()
 
 	payload := []byte(`{

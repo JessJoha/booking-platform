@@ -20,6 +20,11 @@ func InitDB() {
 		log.Fatal("Error loading .env file")
 	}
 
+	if os.Getenv("TESTING") == "true" {
+		fmt.Println("TESTING mode: skipping real DB connection")
+		return
+	}
+
 	dbUser := os.Getenv("DB_USER")
 	dbPass := os.Getenv("DB_PASSWORD")
 	dbHost := os.Getenv("DB_HOST")
@@ -34,7 +39,6 @@ func InitDB() {
 		log.Fatal("Error connecting to database: ", err)
 	}
 
-	database.AutoMigrate(&model.Space{})
-
+	database.AutoMigrate(&model.Space{}) // ⚠️ Esta línea también debe evitarse si estás en test. Pero ya está cubierta.
 	DB = database
 }

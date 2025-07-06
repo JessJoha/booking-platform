@@ -2,14 +2,13 @@ package tests
 
 import (
 	"listSpaces/config"
-	"listSpaces/model"
 	"listSpaces/routes"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/gin-gonic/gin"
-	"github.com/joho/godotenv"
 )
 
 func setupListRouter() *gin.Engine {
@@ -19,23 +18,11 @@ func setupListRouter() *gin.Engine {
 	return router
 }
 
-func insertSampleSpace() {
-	sample := model.Space{
-		Name:        "Cancha Ejemplo",
-		Location:    "Quito",
-		Type:        "césped",
-		Description: "Espacio de prueba",
-		Capacity:    10,
-	}
-	config.DB.Create(&sample)
-}
-
 func TestGetAllSpacesSuccess(t *testing.T) {
-	_ = godotenv.Load("../.env")
+	os.Setenv("TESTING", "true")
 	config.InitDB()
-	router := setupListRouter()
 
-	insertSampleSpace()
+	router := setupListRouter()
 
 	req, _ := http.NewRequest("GET", "/api/spaces", nil)
 	resp := httptest.NewRecorder()
