@@ -1,29 +1,30 @@
-from dotenv import load_dotenv
-from pathlib import Path
-load_dotenv(dotenv_path=Path('.') / '.env')
 from flask import Flask
 from flask_cors import CORS
 from extensions import db
 from routes.reset_route import reset_bp
 from flasgger import Swagger
+from config import Config
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+
+
+env_path = Path('.') / '.env'
+load_dotenv(dotenv_path=env_path)
+
 
 app = Flask(__name__)
 CORS(app)
+app.config.from_object(Config)
 
 
-app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db')
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'test-secret-key')
+print("🔍 REDIS_HOST =", os.environ.get("REDIS_HOST"))
+print("🔍 REDIS_PORT =", os.environ.get("REDIS_PORT"))
+print("🔍 DB_URL =", app.config.get("SQLALCHEMY_DATABASE_URI"))
 
 
-if not os.environ.get('TESTING') and not app.config.get("TESTING"):
-    from dotenv import load_dotenv
-    from pathlib import Path
-    from config import Config
+db.init_app(app)
 
-    load_dotenv(dotenv_path=Path('.') / '.env')
-    app.config.from_object(Config)
 
 swagger = Swagger(app, template={
     "swagger": "2.0",
@@ -35,8 +36,8 @@ swagger = Swagger(app, template={
 })
 
 
-db.init_app(app)
 app.register_blueprint(reset_bp, url_prefix="/recover")
+
 
 @app.route('/')
 def index():
@@ -51,7 +52,8 @@ def index():
     """
     return "resetPasswordService is running", 200
 
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True, host="0.0.0.0", port=app.config.get("RESET_SERVICE_PORT", 5004))
+    app.run(debug=True, host="0.0.0.0", port=app.config.get("RESET_SERVICE_PORT", 5006))
