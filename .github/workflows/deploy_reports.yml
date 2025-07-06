@@ -5,7 +5,7 @@ on:
     branches:
       - test
     paths:
-      - 'backend/reportsAnalytics/**'
+      - 'backend/reports_Analytics/**'
       - '.github/workflows/deploy_reports.yml'
 
 jobs:
