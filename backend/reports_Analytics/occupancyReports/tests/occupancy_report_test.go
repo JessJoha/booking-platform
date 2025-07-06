@@ -17,6 +17,16 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 )
 
+func init() {
+	err := godotenv.Load(".env")
+	if err != nil {
+		err = godotenv.Load("../../.env")
+		if err != nil {
+			panic("Could not load .env file")
+		}
+	}
+	config.ConnectMongoDB()
+}
 func setupTestRouter() *mux.Router {
 	r := mux.NewRouter()
 	r.HandleFunc("/report", handlers.ReportHandler).Methods("GET")
