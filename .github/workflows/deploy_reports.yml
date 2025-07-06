@@ -19,7 +19,6 @@ jobs:
         run: |
           cd backend/reports_Analytics/reportsUser
           npm install
-
       - name: Fix jest permissions for reportsUser
         run: chmod +x ./node_modules/.bin/jest
         working-directory: backend/reports_Analytics/reportsUser
@@ -28,7 +27,6 @@ jobs:
         run: |
           cd backend/reports_Analytics/reportsUser
           npm test
-
       - name: Run Unit Tests for occupancyReports
         run: go test ./tests
         working-directory: backend/reports_Analytics/occupancyReports
@@ -44,7 +42,6 @@ jobs:
           filters: |
             reportsUser: backend/reports_Analytics/reportsUser/**
             occupancyReports: backend/reports_Analytics/occupancyReports/**
-
       - name: Log in to DockerHub
         uses: docker/login-action@v2
         with:
@@ -55,10 +52,8 @@ jobs:
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1 ./backend/reports_Analytics/reportsUser
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
-
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1 ./backend/reports_Analytics/occupancyReports
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
-
       - name: Deploy ReportsAnalytics to AWS EC2
         if: success()
         uses: appleboy/ssh-action@master
@@ -71,19 +66,12 @@ jobs:
             sudo apt clean
             sudo apt autoremove -y || true
             sudo journalctl --vacuum-time=2d || true
-
-
             if ! command -v docker &> /dev/null; then
               sudo apt update && sudo apt install -y docker.io
             fi
-
-
             sudo systemctl restart docker || sudo systemctl start docker
-
-
             docker ps -aq | xargs -r docker stop
             docker ps -aq | xargs -r docker rm
-
             # REPORTS USER
             if [[ "${{ steps.changes.outputs.reportsUser }}" == 'true' ]]; then
               echo "🚀 Desplegando reports-user..."
@@ -95,7 +83,6 @@ jobs:
                 -e PORT="3009" \
                 ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
             fi
-
             # OCCUPANCY REPORTS
             if [[ "${{ steps.changes.outputs.occupancyReports }}" == 'true' ]]; then
               echo "🚀 Desplegando occupancy-reports..."
