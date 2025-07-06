@@ -5,6 +5,7 @@ from routes.findRoutes import find_bp
 from flask_cors import CORS
 from flasgger import Swagger
 import os
+from config import Config 
 
 load_dotenv()
 
