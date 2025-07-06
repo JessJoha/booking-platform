@@ -9,18 +9,20 @@ os.environ['REDIS_PORT'] = '6379'
 os.environ['REDIS_DB'] = '0'
 os.environ['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
 os.environ['SECRET_KEY'] = 'test-secret-key'
-
+os.environ['TESTING'] = '1'  
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 
 try:
     from app import app
 except ImportError:
-    
+  
     from flask import Flask
     app = Flask(__name__)
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///test.db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = 'test-secret-key'
    
     from routes.reset_route import reset_bp
     app.register_blueprint(reset_bp, url_prefix='/recover')

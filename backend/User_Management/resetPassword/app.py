@@ -9,14 +9,18 @@ app = Flask(__name__)
 CORS(app)
 
 
-if not app.config.get("TESTING"):
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///test.db')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'test-secret-key')
+
+# Solo cargar configuración adicional si no estamos en modo testing
+if not os.environ.get('TESTING') and not app.config.get("TESTING"):
     from dotenv import load_dotenv
     from pathlib import Path
     from config import Config
 
     load_dotenv(dotenv_path=Path('.') / '.env')
     app.config.from_object(Config)
-
 
 swagger = Swagger(app, template={
     "swagger": "2.0",
@@ -27,7 +31,7 @@ swagger = Swagger(app, template={
     }
 })
 
-
+# Inicializar extensiones
 db.init_app(app)
 app.register_blueprint(reset_bp, url_prefix="/recover")
 
