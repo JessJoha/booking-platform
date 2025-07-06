@@ -18,16 +18,16 @@ jobs:
         
       - name: Install dependencies for reportsUser
         run: |
-          cd backend/reportsAnalytics/reportsUser
+          cd backend/reports_Analytics/reportsUser
           npm install
 
       - name: Fix jest permissions for reportsUser
         run: chmod +x ./node_modules/.bin/jest
-        working-directory: backend/reportsAnalytics/reportsUser
+        working-directory: backend/reports_Analytics/reportsUser
 
       - name: Run unit tests for reportsUser
         run: |
-          cd backend/reportsAnalytics/reportsUser
+          cd backend/reports_Analytics/reportsUser
           npm test
 
 

@@ -10,3 +10,4 @@ describe('GET /api/reports/user/:userId', () => {
     expect(res.body).toHaveProperty('reservations');
   });
 });
+  
