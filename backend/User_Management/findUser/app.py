@@ -10,11 +10,10 @@ from config import Config
 load_dotenv()
 
 app = Flask(__name__)
-
 CORS(app)
 
 
-if not app.config.get("TESTING"):
+if os.environ.get("TESTING") != "1":
     app.config.from_object(Config)
 
 db.init_app(app)
@@ -45,7 +44,6 @@ def index():
     return 'findUserService is running', 200
 
 if __name__ == '__main__':
-   
     with app.app_context():
         db.create_all()
     app.run(debug=True, host='0.0.0.0', port=Config.FIND_USER_SERVICE_PORT)
