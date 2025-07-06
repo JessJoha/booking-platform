@@ -69,25 +69,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Clean old Docker containers and images
-        run: |
-          docker stop login-auth || true && docker rm login-auth || true
-          docker stop register-user || true && docker rm register-user || true
-          docker stop reset-password || true && docker rm reset-password || true
-          docker stop send-recovery-code || true && docker rm send-recovery-code || true
-          docker stop update-profile || true && docker rm update-profile || true
-          docker stop user-profile || true && docker rm user-profile || true
-          docker stop find-user || true && docker rm find-user || true
-          docker stop get-user-by-username || true && docker rm get-user-by-username || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/reset-password:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/send-recovery-code:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/user-profile:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1 || true
-
       - name: Build and push UserManagement images
         run: |
           docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1 ./backend/User_Management/login_auth
@@ -125,7 +106,9 @@ jobs:
           script: |
             sudo apt update && sudo apt install -y docker.io || true
             sudo systemctl start docker
-            sudo docker system prune -af
+            docker ps -aq | xargs -r docker stop
+            docker ps -aq | xargs -r docker rm
+
 
             # LOGIN AUTH
             if [[ "${{ steps.changes.outputs.login_auth }}" == 'true' ]]; then

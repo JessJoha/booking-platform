@@ -49,12 +49,6 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-      - name: Clean old Docker containers and images
-        run: |
-          docker stop reports-user || true && docker rm reports-user || true
-          docker stop occupancy-reports || true && docker rm occupancy-reports || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1 || true
-          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1 || true
 
       - name: Build and push ReportsAnalytics images
         run: |
@@ -74,7 +68,8 @@ jobs:
           script: |
             sudo apt update && sudo apt install -y docker.io || true
             sudo systemctl start docker
-            sudo docker system prune -af
+            docker ps -aq | xargs -r docker stop
+            docker ps -aq | xargs -r docker rm
 
             # REPORTS USER
             if [[ "${{ steps.changes.outputs.reportsUser }}" == 'true' ]]; then
