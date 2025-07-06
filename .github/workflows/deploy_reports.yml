@@ -15,7 +15,6 @@ jobs:
       - name: Checkout código
         uses: actions/checkout@v3
 
-        
       - name: Install dependencies for reportsUser
         run: |
           cd backend/reports_Analytics/reportsUser
@@ -30,10 +29,13 @@ jobs:
           cd backend/reports_Analytics/reportsUser
           npm test
 
-
       - name: Run Unit Tests for occupancyReports
-        working-directory: backend/reports_Analytics/occupancyReports
         run: go test ./tests
+        working-directory: backend/reports_Analytics/occupancyReports
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI_REPORT }}
+          MONGO_DB: ${{ secrets.MONGO_DB_REPORT }}
+          MONGO_COLLECTION: ${{ secrets.MONGO_COLLECTION_REPORT }}
 
       - name: Detect changed microservices
         id: changes
@@ -49,13 +51,12 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-
       - name: Build and push ReportsAnalytics images
         run: |
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1 ./backend/reportsAnalytics/reportsUser
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1 ./backend/reports_Analytics/reportsUser
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
 
-          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1 ./backend/reportsAnalytics/occupancyReports
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1 ./backend/reports_Analytics/occupancyReports
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
 
       - name: Deploy ReportsAnalytics to AWS EC2
@@ -74,8 +75,6 @@ jobs:
             # REPORTS USER
             if [[ "${{ steps.changes.outputs.reportsUser }}" == 'true' ]]; then
               sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
-              sudo docker stop reports-user || true
-              sudo docker rm reports-user || true
               sudo docker run -d --name reports-user -p 3009:3009 \
                 -e DB_HOST="${{ secrets.DB_HOST_REPORTS }}" \
                 -e DB_USER="${{ secrets.DB_USER_REPORTS }}" \
@@ -87,8 +86,6 @@ jobs:
             # OCCUPANCY REPORTS
             if [[ "${{ steps.changes.outputs.occupancyReports }}" == 'true' ]]; then
               sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
-              sudo docker stop occupancy-reports || true
-              sudo docker rm occupancy-reports || true
               sudo docker run -d --name occupancy-reports -p 6000:6000 \
                 -e MONGO_URI="${{ secrets.MONGO_URI_REPORT }}" \
                 -e MONGO_DB="${{ secrets.MONGO_DB_REPORT }}" \
