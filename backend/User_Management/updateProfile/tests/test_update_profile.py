@@ -16,7 +16,6 @@ class UpdateProfileTestCase(unittest.TestCase):
     @patch('routes.update_Profile.collection')
     def test_update_profile_success(self, mock_collection, mock_get_username):
         mock_get_username.return_value = 'johndoe'
-
         mock_collection.find_one.side_effect = [
             {"username": "johndoe"},
             {
