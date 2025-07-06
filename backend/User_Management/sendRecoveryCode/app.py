@@ -1,5 +1,3 @@
-from dotenv import load_dotenv
-load_dotenv()
 
 from flask import Flask
 from flask_cors import CORS
@@ -7,6 +5,11 @@ from extensions import db
 from routes.requestRoute import recover_bp
 from flasgger import Swagger
 import os
+from dotenv import load_dotenv
+from pathlib import Path
+load_dotenv(dotenv_path=Path('.') / '.env')
+
+from config import Config
 
 app = Flask(__name__)
 CORS(app)
@@ -21,7 +24,7 @@ elif not app.config.get("TESTING"):
     from pathlib import Path
     from config import Config
 
-    load_dotenv(dotenv_path=Path('.') / '.env')
+
     app.config.from_object(Config)
 
 swagger = Swagger(app, template={
