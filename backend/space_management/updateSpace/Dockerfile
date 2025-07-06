@@ -7,8 +7,8 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 COPY . .
-RUN go mod tidy
 RUN go build -o updateSpace main.go
+
 
 # Stage 2: Final image
 FROM debian:bullseye-slim
@@ -20,3 +20,4 @@ COPY --from=builder /app/updateSpace .
 EXPOSE 3011
 
 CMD ["./updateSpace"]
+
