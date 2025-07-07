@@ -128,6 +128,8 @@ jobs:
               # LOGIN AUTH
               if [[ "${{ steps.changes.outputs.login_auth }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/login-auth:v1
+                sudo docker stop login-auth || true
+                sudo docker rm login-auth || true
                 sudo docker run -d --name login-auth -p 5000:5000 \
                   --memory="300m" --cpus="0.5" \
                   -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
@@ -141,6 +143,8 @@ jobs:
               # REGISTER USER
               if [[ "${{ steps.changes.outputs.registerUser }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
+                sudo docker stop register-user || true
+                sudo docker rm register-user || true
                 sudo docker run -d --name register-user -p 5001:5001 \
                   --memory="300m" --cpus="0.5" \
                   -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
@@ -169,7 +173,9 @@ jobs:
               # SEND RECOVERY CODE
               if [[ "${{ steps.changes.outputs.sendRecoveryCode }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/send-recovery-code:v1
-                sudo docker run -d --name send-recovery -p 5005:5005 \
+                sudo docker stop send-recovery-code || true
+                sudo docker rm send-recovery-code || true
+                sudo docker run -d --name send-recovery-code -p 5005:5005 \
                   --memory="300m" --cpus="0.5" \
                   -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
                   -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
@@ -185,6 +191,8 @@ jobs:
               # UPDATE PROFILE
               if [[ "${{ steps.changes.outputs.updateProfile }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+                sudo docker stop update-profile || true
+                sudo docker rm update-profile || true
                 sudo docker run -d --name update-profile -p 5008:5008 \
                   --memory="300m" --cpus="0.5" \
                   -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
@@ -196,7 +204,9 @@ jobs:
               # USER PROFILE
               if [[ "${{ steps.changes.outputs.userProfile }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/user-profile:v1
-                sudo docker run -d --name userprofileservice -p 5010:5010 \
+                sudo docker stop user-profile || true
+                sudo docker rm user-profile || true
+                sudo docker run -d --name user-profile -p 5010:5010 \
                   --memory="300m" --cpus="0.5" \
                   -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
                   -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
@@ -222,7 +232,9 @@ jobs:
               # GET PROFILE BY USERNAME
               if [[ "${{ steps.changes.outputs.getUserByUsername }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
-                sudo docker run -d --name get-profile-user -p 5007:5007 \
+                sudo docker stop get-user-by-username || true
+                sudo docker rm get-user-by-username || true
+                sudo docker run -d --name get-user-by-username -p 5007:5007 \
                   --memory="300m" --cpus="0.5" \
                   -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
                   -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
