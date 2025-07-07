@@ -20,7 +20,12 @@ func main() {
 	router := gin.Default()
 	routes.SetupRoutes(router)
 
-	// Swagger route
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "listService is running",
+		})
+	})
+
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	port := os.Getenv("PORT")

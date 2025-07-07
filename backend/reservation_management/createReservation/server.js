@@ -1,7 +1,7 @@
 const express = require('express');
+require('dotenv').config();
 const sequelize = require('./src/config/db');
 const reservationRoutes = require('./src/routes/reservationRoutes'); 
-require('dotenv').config();
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
@@ -37,7 +37,7 @@ app.get('/', (req, res) => {
 if (require.main === module) {
   sequelize.authenticate()
     .then(() => {
-      console.log('✅ Connection to database established successfully.');
+      console.log('Connection to database established successfully.');
       return sequelize.sync();
     })
     .then(() => {

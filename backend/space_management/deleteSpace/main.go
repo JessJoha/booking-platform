@@ -20,6 +20,12 @@ func main() {
 	router := gin.Default()
 	routes.SetupRoutes(router)
 
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "deleteService is running",
+		})
+	})
+
 	// Swagger route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

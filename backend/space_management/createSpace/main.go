@@ -23,6 +23,12 @@ func main() {
 	// Swagger route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
+	router.GET("/", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "createSpaceService is running",
+		})
+	})
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3008"
