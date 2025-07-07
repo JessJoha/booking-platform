@@ -8,7 +8,7 @@ const sendOccupancyEvent = async (spaceId, date, action) => {
       action
     };
 
-    const response = await axios.post('http://localhost:6000/webhook/occupancy', payload);
+    const response = await axios.post('http://13.223.29.133:6000/webhook/occupancy', payload);
     console.log('Webhook sent to occupancyReports:', response.status);
   } catch (error) {
     console.error('Error sending event to busy webhook:', error.message);

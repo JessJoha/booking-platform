@@ -115,7 +115,7 @@ def login():
     }
     try:
         response = requests.post(
-            "http://localhost:5010/profile/init",
+            "http://54.89.82.50:5010/profile/init",
             json=profile_payload,
             headers=headers,
             timeout=5
