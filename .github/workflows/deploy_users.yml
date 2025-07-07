@@ -150,6 +150,7 @@ jobs:
                   -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
                   -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
                   -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                  -e DB_NAME="${{ secrets.DB_NAME_MYSQL }}" \
                   ${{ secrets.DOCKERHUB_USERNAME }}/register-user:v1
                 sleep 2
               fi
