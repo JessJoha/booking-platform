@@ -32,4 +32,6 @@ def index():
     return 'myProfileService is running', 200
 
 if __name__ == '__main__':
+    print(f" http://54.89.82.50:{Config.PROFILE_SERVICE_PORT}/apidocs")
+    print(f"{Config.PROFILE_SERVICE_PORT}")
     app.run(debug=True, host='0.0.0.0', port=Config.PROFILE_SERVICE_PORT)

@@ -36,7 +36,7 @@ def reset_password():
             new_password:
               type: string
               example: myNewPassword123
-    responses:
+        responses:
       200:
         description: Password successfully reset.
         schema:
@@ -67,18 +67,28 @@ def reset_password():
     code = data.get("code")
     new_password = data.get("new_password")
 
+    print(f"Received reset for {email} with code {code}")
+
+    if not email or not code or not new_password:
+        return jsonify({"error": "Missing required fields"}), 400
+
     stored_code = redis_client.get(f"recover:{email}")
+    print(f"📦 Redis code: {stored_code}")
     if not stored_code:
         return jsonify({"error": "Code expired or not found"}), 400
-    if stored_code != code:
+
+    if stored_code.strip() != code.strip():
         return jsonify({"error": "Invalid recovery code"}), 400
 
     user = User.query.filter_by(email=email).first()
     if not user:
+        print("User not found in database")
         return jsonify({"error": "User not found"}), 404
 
     user.set_password(new_password)
+    db.session.add(user)  
     db.session.commit()
-    redis_client.delete(f"recover:{email}")
 
+    redis_client.delete(f"recover:{email}")
+    print(f"✅ Contraseña restablecida para {email}")
     return jsonify({"message": "Password successfully reset"}), 200

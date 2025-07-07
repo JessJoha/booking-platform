@@ -6,4 +6,4 @@ load_dotenv()
 class Config:
     DOCDB_URI = os.getenv("DOCDB_URI")
     DOCDB_DATABASE = os.getenv("DOCDB_DATABASE", "porfilesDB")
-    PROFILE_SERVICE_PORT = int(os.getenv("PROFILE_SERVICE_PORT", 5007))
+    GET_PROFILE_SERVICE_PORT = int(os.getenv("GET_PROFILE_SERVICE_PORT", 5007))

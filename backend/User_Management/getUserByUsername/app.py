@@ -36,5 +36,8 @@ def index():
     return 'getUserByUsernameService is running', 200
 
 if __name__ == '__main__':
-    from config import Config  
-    app.run(debug=True, host='0.0.0.0', port=Config.PROFILE_SERVICE_PORT)
+    from config import Config 
+    print(f" http://localhost:{Config.GET_PROFILE_SERVICE_PORT}/apidocs")
+    print(f"{Config.GET_PROFILE_SERVICE_PORT}")
+ 
+    app.run(debug=True, host='0.0.0.0', port=Config.GET_PROFILE_SERVICE_PORT)
