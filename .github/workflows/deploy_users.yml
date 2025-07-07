@@ -204,6 +204,8 @@ jobs:
               # USER PROFILE
               if [[ "${{ steps.changes.outputs.userProfile }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/user-profile:v1
+                sudo docker stop userprofileservice || true
+                sudo docker rm userprofileservice || true
                 sudo docker stop user-profile || true
                 sudo docker rm user-profile || true
                 sudo docker run -d --name user-profile -p 5010:5010 \
@@ -232,6 +234,8 @@ jobs:
               # GET PROFILE BY USERNAME
               if [[ "${{ steps.changes.outputs.getUserByUsername }}" == 'true' ]]; then
                 sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+                sudo docker stop get-profile-user || true
+                sudo docker rm get-profile-user || true
                 sudo docker stop get-user-by-username || true
                 sudo docker rm get-user-by-username || true
                 sudo docker run -d --name get-user-by-username -p 5007:5007 \
