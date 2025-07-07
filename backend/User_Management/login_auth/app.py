@@ -11,11 +11,9 @@ import os
 
 pymysql.install_as_MySQLdb()
 
+load_dotenv(dotenv_path=Path('.') / '.env')
 
 app = Flask(__name__)
-
-
-load_dotenv(dotenv_path=Path('.') / '.env')
 app.config.from_object(Config)
 
 
