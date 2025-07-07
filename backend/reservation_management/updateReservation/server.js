@@ -27,6 +27,9 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', updateRoutes);
 
+app.get('/', (req, res) => {
+  res.status(200).send('Delete Reservation Service is running');
+});
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3003;
@@ -34,7 +37,7 @@ if (require.main === module) {
     console.log('Database synced');
     app.listen(PORT, () => {
       console.log(`Update Reservation Microservice running on port ${PORT}`);
-      console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+      console.log(`Swagger docs available at http://44.198.112.22:${PORT}/api-docs`);
     });
   }).catch(err => {
     console.error('Database connection error:', err);

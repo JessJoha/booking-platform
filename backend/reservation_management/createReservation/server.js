@@ -28,6 +28,12 @@ app.use('/api', reservationRoutes);
 
 const PORT = process.env.PORT || 3001;
 
+
+app.get('/', (req, res) => {
+  res.status(200).send('Reservation Service is running');
+});
+
+
 if (require.main === module) {
   sequelize.authenticate()
     .then(() => {
@@ -37,7 +43,7 @@ if (require.main === module) {
     .then(() => {
       app.listen(PORT, () => {
         console.log(`Reservation server running on port ${PORT}`);
-        console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+        console.log(`Swagger docs available at http://44.198.112.22:${PORT}/api-docs`);
       });
     })
     .catch((err) => {

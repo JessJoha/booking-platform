@@ -19,21 +19,32 @@ const swaggerOptions = {
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-
 const app = express();
+
 app.use(express.json());
+
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', reservationRoutes);
 
+
+app.get('/', (req, res) => {
+  res.status(200).send('Delete Reservation Service is running');
+});
+
+const PORT = process.env.PORT || 3002;
+
+
 if (require.main === module) {
-  sequelize.sync()
+  sequelize.authenticate()
     .then(() => {
-      console.log('Database synced');
-      const PORT = process.env.PORT || 3002;
+      console.log('Database connection established.');
+      return sequelize.sync();
+    })
+    .then(() => {
       app.listen(PORT, () => {
         console.log(`Delete Reservation Microservice running on port ${PORT}`);
-        console.log(`Swagger docs available at http://localhost:${PORT}/api-docs`);
+        console.log(`Swagger docs available at http://44.198.112.22:${PORT}/api-docs`);
       });
     })
     .catch(err => {
