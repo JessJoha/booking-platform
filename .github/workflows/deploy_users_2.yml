@@ -64,7 +64,21 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY_USERS_ALT }}
           port: 22
           script: |
-            sudo systemctl start docker || true
+            if ! command -v docker &> /dev/null
+            then
+              echo "🐳 Docker not found. Installing..."
+              sudo apt update
+              sudo apt install -y docker.io
+              sudo systemctl enable docker
+              sudo systemctl start docker
+              sudo usermod -aG docker $USER
+              echo "Docker installed and started"
+            else
+              echo "Docker already installed"
+              sudo systemctl start docker
+            fi
+
+            # Clean up any existing containers
             docker stop $(docker ps -aq) || true
             docker rm $(docker ps -aq) || true
 
