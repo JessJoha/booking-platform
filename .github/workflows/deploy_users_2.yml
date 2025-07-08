@@ -1,0 +1,97 @@
+name: Deploy UserManagement Microservices - Part 2
+
+on:
+  push:
+    branches:
+      - test
+    paths:
+    - 'backend/User_Management/findUser/**'
+    - 'backend/User_Management/getUserByUsername/**'
+    - 'backend/User_Management/updateProfile/**'
+    - '.github/workflows/deploy_users_part2.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Run unit tests (Part 2)
+        run: |
+          pip install -r backend/User_Management/findUser/requirements.txt
+          python -m unittest discover -s backend/User_Management/findUser/tests
+
+          pip install -r backend/User_Management/getUserByUsername/requirements.txt
+          python -m unittest discover -s backend/User_Management/getUserByUsername/tests
+
+          pip install -r backend/User_Management/updateProfile/requirements.txt
+          python -m unittest discover -s backend/User_Management/updateProfile/tests
+
+      - name: Detect changes
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            findUser: backend/User_Management/findUser/**
+            getUserByUsername: backend/User_Management/getUserByUsername/**
+            updateProfile: backend/User_Management/updateProfile/**
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Build and push images (Part 2)
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1 ./backend/User_Management/findUser
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1 ./backend/User_Management/getUserByUsername
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1 ./backend/User_Management/updateProfile
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+
+      - name: Deploy to EC2 (Alt Node)
+        if: success()
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_USERS_ALT }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_USERS_ALT }}
+          port: 22
+          script: |
+            sudo systemctl start docker || true
+            docker stop $(docker ps -aq) || true
+            docker rm $(docker ps -aq) || true
+
+            # FIND USER
+            if [[ "${{ steps.changes.outputs.findUser }}" == 'true' ]]; then
+              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+              docker run -d --name find-user -p 5002:5002 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+            fi
+
+            # GET PROFILE BY USERNAME
+            if [[ "${{ steps.changes.outputs.getUserByUsername }}" == 'true' ]]; then
+              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+              docker run -d --name get-user-by-username -p 5007:5007 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+            fi
+
+            # UPDATE PROFILE
+            if [[ "${{ steps.changes.outputs.updateProfile }}" == 'true' ]]; then
+              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+              docker run -d --name update-profile -p 5008:5008 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+            fi
