@@ -54,7 +54,6 @@ if __name__ == '__main__':
 
 
     print(f" http://54.89.82.50:{Config.LOGIN_SERVICE_PORT}/apidocs")
-    print(f"tests")
     print(f"{Config.LOGIN_SERVICE_PORT}")
 
     app.run(debug=True, host='0.0.0.0', port=app.config.get('LOGIN_SERVICE_PORT'))
