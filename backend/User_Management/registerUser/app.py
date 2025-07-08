@@ -50,6 +50,6 @@ if __name__ == '__main__':
     with app.app_context():
         db.create_all()
 
-    print(f" http://54.89.82.50:{Config.REGISTER_SERVICE_PORT}/apidocs")
+    print(f" http://34.234.124.88:{Config.REGISTER_SERVICE_PORT}/apidocs")
     print(f"{Config.REGISTER_SERVICE_PORT}")
     app.run(debug=True, host='0.0.0.0', port=app.config.get('REGISTER_SERVICE_PORT', 5001))

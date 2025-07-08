@@ -79,13 +79,13 @@ jobs:
             fi
 
             # Clean up any existing containers
-            docker stop $(docker ps -aq) || true
-            docker rm $(docker ps -aq) || true
+            sudo docker stop $(docker ps -aq) || true
+            sudo docker rm $(docker ps -aq) || true
 
             # FIND USER
             if [[ "${{ steps.changes.outputs.findUser }}" == 'true' ]]; then
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
-              docker run -d --name find-user -p 5002:5002 \
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+              sudo docker run -d --name find-user -p 5002:5002 \
                 -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
                 -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
                 -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
@@ -94,8 +94,8 @@ jobs:
 
             # GET PROFILE BY USERNAME
             if [[ "${{ steps.changes.outputs.getUserByUsername }}" == 'true' ]]; then
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
-              docker run -d --name get-user-by-username -p 5007:5007 \
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+              sudo docker run -d --name get-user-by-username -p 5007:5007 \
                 -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
                 -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
                 ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
@@ -103,8 +103,8 @@ jobs:
 
             # UPDATE PROFILE
             if [[ "${{ steps.changes.outputs.updateProfile }}" == 'true' ]]; then
-              docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
-              docker run -d --name update-profile -p 5008:5008 \
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+              sudo docker run -d --name update-profile -p 5008:5008 \
                 -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
                 -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
                 ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
