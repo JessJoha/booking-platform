@@ -40,6 +40,7 @@ db.init_app(app)
 app.register_blueprint(recover_bp, url_prefix="/recover")
 
 @app.route('/')
+@app.route('/sendRecoveryCode')
 def index():
     """
     Health check endpoint.

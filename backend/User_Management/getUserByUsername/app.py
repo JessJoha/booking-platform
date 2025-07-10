@@ -23,6 +23,7 @@ swagger = Swagger(app, template={
 app.register_blueprint(user_bp, url_prefix="/user")
 
 @app.route('/')
+@app.route('/getUser') 
 def index():
     """
     Health check endpoint.

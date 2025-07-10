@@ -37,6 +37,7 @@ print("Ruta activa: POST /recover/reset")
 
 
 @app.route('/')
+@app.route('/recover')
 def index():
     """
     Health check endpoint.

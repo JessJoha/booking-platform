@@ -27,6 +27,11 @@ func main() {
 			"message": "createSpace is running",
 		})
 	})
+	router.GET("/space", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "createSpace is running",
+		})
+	})
 
 	port := os.Getenv("PORT")
 	if port == "" {

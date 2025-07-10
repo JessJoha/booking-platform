@@ -33,6 +33,7 @@ db.init_app(app)
 app.register_blueprint(register_bp, url_prefix='/auth')
 
 @app.route('/')
+@app.route('/register')
 def index():
     """
     Health check endpoint.

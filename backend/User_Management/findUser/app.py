@@ -29,6 +29,7 @@ swagger = Swagger(app, template={
 app.register_blueprint(find_bp)
 
 @app.route('/')
+@app.route('/find') 
 def index():
     return 'findUserService is running', 200
 

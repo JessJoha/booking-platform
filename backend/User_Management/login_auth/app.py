@@ -39,6 +39,7 @@ swagger = Swagger(app, template={
 app.register_blueprint(auth_bp, url_prefix='/auth')
 
 @app.route('/')
+@app.route('/auth') 
 def index():
     return 'login_auth is running', 200
 

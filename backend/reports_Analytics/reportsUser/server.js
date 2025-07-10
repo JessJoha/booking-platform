@@ -24,7 +24,7 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/reports', reportRoutes);
-app.get('/', (req, res) => {
+app.get('/reportUser', (req, res) => {
   res.status(200).send('OK');
 });
 
@@ -33,7 +33,7 @@ if (require.main === module) {
   app.listen(PORT, () => {
     console.log(`reportsUser microservice running on port ${PORT}`);
     console.log(`test`);
-    console.log(`Swagger API docs available at: http://localhost:${PORT}/api-docs`);
+    console.log(`Swagger API docs available at: http://13.223.29.133:${PORT}/api-docs`);
   });
 }
 

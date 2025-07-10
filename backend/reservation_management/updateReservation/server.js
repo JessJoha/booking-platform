@@ -27,8 +27,8 @@ app.use(express.json());
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', updateRoutes);
 
-app.get('/', (req, res) => {
-  res.status(200).send('Delete Reservation Service is running');
+app.get('/updateReservations', (req, res) => {
+  res.status(200).send('Update Reservation Service is running');
 });
 
 if (require.main === module) {

@@ -28,7 +28,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api', reservationRoutes);
 
 
-app.get('/', (req, res) => {
+app.get('/deleteReservations', (req, res) => {
   res.status(200).send('Delete Reservation Service is running');
 });
 

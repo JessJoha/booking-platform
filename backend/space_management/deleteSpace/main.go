@@ -26,6 +26,12 @@ func main() {
 		})
 	})
 
+	router.GET("/deleteSpace", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "createSpace is running",
+		})
+	})
+
 	// Swagger route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

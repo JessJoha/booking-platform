@@ -25,7 +25,12 @@ func main() {
 			"message": "listService is running",
 		})
 	})
+	router.GET("/listSpaces", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "listService is running",
+		})
 
+	})
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	port := os.Getenv("PORT")

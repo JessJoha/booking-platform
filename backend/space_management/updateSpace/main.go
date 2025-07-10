@@ -25,6 +25,11 @@ func main() {
 			"message": "updateService is running",
 		})
 	})
+	router.GET("/updateSpace", func(c *gin.Context) {
+		c.JSON(200, gin.H{
+			"message": "updateService is running",
+		})
+	})
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
