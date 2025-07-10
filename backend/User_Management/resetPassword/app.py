@@ -32,7 +32,7 @@ swagger = Swagger(app, template={
 
 
 app.register_blueprint(reset_bp, url_prefix="/recover")
-print("Swagger iniciado en: http://54.89.82.50:5006/apidocs")
+print("Swagger iniciado en: http://:5006/apidocs")
 print("Ruta activa: POST /recover/reset")
 
 

@@ -30,7 +30,7 @@ const getReservationsByUsername = async (req, res) => {
   console.log("🔎 Searching for reservations for:", username);
 
 try {
-  const response = await axios.get(`http://localhost:5007/user/${encodeURIComponent(username)}`);
+  const response = await axios.get(`http://34.234.124.88:5007/user/${encodeURIComponent(username)}`);
   const user = response.data; 
 
   console.log("📡 Response from the profile microservice:", user);

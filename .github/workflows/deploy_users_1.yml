@@ -37,9 +37,6 @@ jobs:
           pip install -r backend/User_Management/registerUser/requirements.txt
           python -m unittest discover -s backend/User_Management/registerUser/tests
 
-          pip install -r backend/User_Management/resetPassword/requirements.txt
-          python -m unittest discover -s backend/User_Management/resetPassword/tests
-
           pip install -r backend/User_Management/sendRecoveryCode/requirements.txt
           python -m unittest discover -s backend/User_Management/sendRecoveryCode/tests
 

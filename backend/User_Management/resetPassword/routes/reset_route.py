@@ -90,5 +90,5 @@ def reset_password():
     db.session.commit()
 
     redis_client.delete(f"recover:{email}")
-    print(f"✅ Contraseña restablecida para {email}")
+    print(f"Password successfully reset {email}")
     return jsonify({"message": "Password successfully reset"}), 200
