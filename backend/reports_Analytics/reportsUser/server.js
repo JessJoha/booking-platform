@@ -24,7 +24,9 @@ const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/api/reports', reportRoutes);
-
+app.get('/', (req, res) => {
+  res.status(200).send('OK');
+});
 
 if (require.main === module) {
   const PORT = process.env.PORT || 3009;

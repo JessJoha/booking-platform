@@ -34,6 +34,10 @@ func main() {
 
 	r.HandleFunc("/webhook/occupancy", handlers.WebhookHandler).Methods("POST")
 	r.HandleFunc("/report", handlers.ReportHandler).Methods("GET")
+	r.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte("OK"))
+	}).Methods("GET")
 
 	port := os.Getenv("PORT")
 	if port == "" {
