@@ -11,6 +11,7 @@ on:
       - '.github/workflows/deploy_reports.yml'
 
   pull_request:
+    types: [closed]
     branches:
       - main
     paths:
@@ -127,7 +128,7 @@ jobs:
                   fi
 
   deploy-to-production:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     name: 🚀 Deploy ReportsAnalytics to Production
     steps:

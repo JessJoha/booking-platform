@@ -10,6 +10,7 @@ on:
       - '.github/workflows/deploy_spaces.yml'
 
   pull_request:
+    types: [closed]
     branches:
       - main
     paths:
@@ -148,7 +149,7 @@ jobs:
                 ${{ secrets.DOCKERHUB_USERNAME }}/list-space:v1
 
   deploy-to-production:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     name: 🚀 Deploy SpaceManagement to Production
     steps:

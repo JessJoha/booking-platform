@@ -41,5 +41,6 @@ func main() {
 	}
 
 	log.Printf("Listening on port %s", port)
+	log.Printf("test")
 	http.ListenAndServe(":"+port, r)
 }

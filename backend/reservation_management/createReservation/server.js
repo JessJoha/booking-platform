@@ -48,6 +48,7 @@ if (require.main === module) {
     })
     .catch((err) => {
       console.error('Failed to connect to the database:', err);
+      console.log('test');
     });
 }
 

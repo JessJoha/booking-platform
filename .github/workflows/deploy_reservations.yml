@@ -11,8 +11,10 @@ on:
       - '.github/workflows/deploy_reservations.yml'
 
   pull_request:
+    types: [closed]
     branches:
       - main
+
     paths:
       - 'backend/reservation_management/**'
       - '.github/workflows/deploy_reservations.yml'
@@ -187,7 +189,8 @@ jobs:
             fi
 
   deploy-to-production:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+
     runs-on: ubuntu-latest
     name: 🚀 Deploy ReservationManagement to Production
     steps:

@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - test
-      - main
 
     paths:
       - 'backend/User_Management/findUser/**'
@@ -13,6 +12,7 @@ on:
       - '.github/workflows/deploy_users_part2.yml'
 
   pull_request:
+    types: [closed]
     branches:
       - main
     paths:
@@ -123,7 +123,7 @@ jobs:
             fi
 
   deploy-to-production:
-    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
     runs-on: ubuntu-latest
     name: Deploy to Production (Main)
     steps:

@@ -20,7 +20,6 @@ func main() {
 	router := gin.Default()
 	routes.SetupRoutes(router)
 
-	// Swagger route
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	router.GET("/", func(c *gin.Context) {
