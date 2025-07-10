@@ -24,7 +24,7 @@ func main() {
 
 	router.GET("/", func(c *gin.Context) {
 		c.JSON(200, gin.H{
-			"message": "createSpaceService is running",
+			"message": "createSpace is running",
 		})
 	})
 
