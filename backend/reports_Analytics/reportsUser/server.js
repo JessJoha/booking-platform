@@ -32,6 +32,7 @@ if (require.main === module) {
   const PORT = process.env.PORT || 3009;
   app.listen(PORT, () => {
     console.log(`reportsUser microservice running on port ${PORT}`);
+    console.log(`test`);
     console.log(`Swagger API docs available at: http://localhost:${PORT}/api-docs`);
   });
 }
