@@ -4,6 +4,15 @@ on:
   push:
     branches:
       - test
+      - main
+
+    paths:
+      - 'backend/reports_Analytics/**'
+      - '.github/workflows/deploy_reports.yml'
+
+  pull_request:
+    branches:
+      - main
     paths:
       - 'backend/reports_Analytics/**'
       - '.github/workflows/deploy_reports.yml'
@@ -116,3 +125,65 @@ jobs:
                       -e PORT="6000" \
                       ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
                   fi
+
+  deploy-to-production:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    name: 🚀 Deploy ReportsAnalytics to Production
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Deploy ReportsAnalytics to AWS EC2 (PROD)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_REPORT_PROD }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_REPORT_PROD }}
+          script: |
+
+            sudo docker system prune -a -f --volumes || true
+            sudo apt clean
+            sudo apt autoremove -y || true
+            sudo journalctl --vacuum-time=2d || true
+
+
+            sudo systemctl stop docker || true
+            sudo apt purge -y docker.io containerd runc || true
+            sudo rm -rf /var/lib/docker /var/lib/containerd /etc/docker || true
+            sudo apt autoremove -y
+            sudo apt update
+            sudo apt install -y docker.io iptables arptables ebtables
+
+            sudo update-alternatives --set iptables /usr/sbin/iptables-legacy
+            sudo update-alternatives --set ip6tables /usr/sbin/ip6tables-legacy
+            sudo update-alternatives --set arptables /usr/sbin/arptables-legacy
+            sudo update-alternatives --set ebtables /usr/sbin/ebtables-legacy
+
+
+            sudo systemctl daemon-reexec
+            sudo systemctl enable docker
+            sudo systemctl restart docker
+
+            sudo docker version || { echo "Docker no está disponible"; exit 1; }
+
+       
+            sudo docker ps -aq | xargs -r sudo docker stop
+            sudo docker ps -aq | xargs -r sudo docker rm
+
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
+            sudo docker run -d --name reports-user -p 3019:3009 \
+              -e DB_HOST="${{ secrets.DB_HOST_REPORTS_PROD }}" \
+              -e DB_USER="${{ secrets.DB_USER_REPORTS_PROD }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_REPORTS_PROD }}" \
+              -e PORT="3009" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/reports-user:v1
+
+            echo "📊 Deploying occupancy-reports PROD"
+            sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1
+            sudo docker run -d --name occupancy-reports -p 6010:6000 \
+              -e MONGO_URI="${{ secrets.MONGO_URI_REPORT_PROD }}" \
+              -e MONGO_DB="${{ secrets.MONGO_DB_REPORT_PROD }}" \
+              -e MONGO_COLLECTION="${{ secrets.MONGO_COLLECTION_REPORT_PROD }}" \
+              -e PORT="6000" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/occupancy-reports:v1

@@ -4,11 +4,23 @@ on:
   push:
     branches:
       - test
+      - main
+
     paths:
-    - 'backend/User_Management/findUser/**'
-    - 'backend/User_Management/getUserByUsername/**'
-    - 'backend/User_Management/updateProfile/**'
-    - '.github/workflows/deploy_users_part2.yml'
+      - 'backend/User_Management/findUser/**'
+      - 'backend/User_Management/getUserByUsername/**'
+      - 'backend/User_Management/updateProfile/**'
+      - '.github/workflows/deploy_users_part2.yml'
+
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'backend/User_Management/findUser/**'
+      - 'backend/User_Management/getUserByUsername/**'
+      - 'backend/User_Management/updateProfile/**'
+      - '.github/workflows/deploy_users_part2.yml'
+
 
 jobs:
   build-and-deploy:
@@ -109,3 +121,48 @@ jobs:
                 -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
                 ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
             fi
+
+  deploy-to-production:
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    name: Deploy to Production (Main)
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Deploy to EC2 (Production)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_USERS_PROD_ALT }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_USERS_PROD_ALT }}
+          port: 22
+          script: |
+              echo "Deploying services to Production instance..."
+              sudo docker stop $(docker ps -aq) || true
+              sudo docker rm $(docker ps -aq) || true
+
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+              sudo docker run -d --name find-user -p 5002:5002 \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_MYSQL }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_MYSQL }}" \
+                -e DB_HOST="${{ secrets.DB_HOST_MYSQL }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/find-user:v1
+
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+              sudo docker run -d --name get-user-by-username -p 5007:5007 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/get-user-by-username:v1
+
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
+              sudo docker run -d --name update-profile -p 5008:5008 \
+                -e DOCDB_URI="${{ secrets.DOCDB_URI_MONGO_PROFILE }}" \
+                -e DOCDB_DATABASE="${{ secrets.DOCDB_DATABASE_MONGO_PROFILE }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/update-profile:v1
