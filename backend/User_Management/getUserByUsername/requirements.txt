@@ -1,0 +1,6 @@
+Flask
+python-dotenv
+pymongo
+flasgger==0.9.7.1
+flask-cors
+

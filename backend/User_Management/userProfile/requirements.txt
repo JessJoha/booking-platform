@@ -1,0 +1,8 @@
+
+python-dotenv
+flask-cors
+pyjwt
+pymongo
+flasgger
+flask
+mongomock

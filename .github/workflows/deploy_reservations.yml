@@ -1,0 +1,250 @@
+name: Deploy ReservationManagement Microservices
+
+on:
+  push:
+    branches:
+      - test
+      - main
+
+    paths:
+      - 'backend/reservation_management/**'
+      - '.github/workflows/deploy_reservations.yml'
+
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+    paths:
+      - 'backend/reservation_management/**'
+      - '.github/workflows/deploy_reservations.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout código
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      
+      - name: Install dependencies for createReservation
+        run: |
+          cd backend/reservation_management/createReservation
+          npm install
+
+      - name: Run unit tests for createReservation
+        run: |
+          cd backend/reservation_management/createReservation
+          npm test
+
+      
+      - name: Install dependencies for deleteReservation
+        run: npm install
+        working-directory: backend/reservation_management/deleteReservation
+
+      - name: Fix jest permissions for deleteReservation
+        run: chmod +x ./node_modules/.bin/jest
+        working-directory: backend/reservation_management/deleteReservation
+
+      - name: Run unit tests for deleteReservation
+        run: npm test
+        working-directory: backend/reservation_management/deleteReservation
+
+      
+      - name: Install dependencies for listReservation
+        run: |
+          cd backend/reservation_management/listReservation
+          npm install
+
+      - name: Fix jest permissions for listReservation
+        run: chmod +x ./node_modules/.bin/jest
+        working-directory: backend/reservation_management/listReservation
+
+      - name: Run unit tests for listReservation
+        run: |
+          cd backend/reservation_management/listReservation
+          npm test
+
+      
+      - name: Install dependencies for updateReservation
+        run: |
+          cd backend/reservation_management/updateReservation
+          npm install
+
+      - name: Fix jest permissions for updateReservation
+        run: chmod +x ./node_modules/.bin/jest
+        working-directory: backend/reservation_management/updateReservation
+
+      - name: Run unit tests for updateReservation
+        run: |
+          cd backend/reservation_management/updateReservation
+          npm test
+
+          
+      - name: Detect changed microservices
+        id: changes
+        uses: dorny/paths-filter@v2
+        with:
+          filters: |
+            createReservation: backend/reservation_management/createReservation/**
+            deleteReservation: backend/reservation_management/deleteReservation/**
+            listReservation: backend/reservation_management/listReservation/**
+            updateReservation: backend/reservation_management/updateReservation/**
+
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Clean old Docker containers and images
+        run: |
+          docker stop create-reservation || true && docker rm create-reservation || true
+          docker stop delete-reservation || true && docker rm delete-reservation || true
+          docker stop list-reservation || true && docker rm list-reservation || true
+          docker stop update-reservation || true && docker rm update-reservation || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1 || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1 || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1 || true
+          docker rmi ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1 || true
+
+      - name: Build and push ReservationManagement images
+        run: |
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1 ./backend/reservation_management/createReservation
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1 ./backend/reservation_management/deleteReservation
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1 ./backend/reservation_management/listReservation
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1
+
+          docker build -t ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1 ./backend/reservation_management/updateReservation
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1
+
+      - name: Deploy ReservationManagement to AWS EC2
+        if: success()
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_RESERVATION }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_RESERVATION }}
+          script: |
+            sudo apt update && sudo apt install -y docker.io || true
+            sudo systemctl start docker
+            sudo docker system prune -af
+
+            # CREATE RESERVATION
+            if [[ "${{ steps.changes.outputs.createReservation }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1
+              sudo docker stop create-reservation || true
+              sudo docker rm create-reservation || true
+              sudo docker run -d --name create-reservation -p 3001:3001 \
+                -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1
+            fi
+
+            # DELETE RESERVATION
+            if [[ "${{ steps.changes.outputs.deleteReservation }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1
+              sudo docker stop delete-reservation || true
+              sudo docker rm delete-reservation || true
+              sudo docker run -d --name delete-reservation -p 3002:3002 \
+                -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1
+            fi
+
+            # LIST RESERVATION
+            if [[ "${{ steps.changes.outputs.listReservation }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1
+              sudo docker stop list-reservation || true
+              sudo docker rm list-reservation || true
+              sudo docker run -d --name list-reservation -p 3004:3004 \
+                -e DB_HOST="${{ secrets.DB_HOST_POSTGRES}}" \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1
+            fi
+
+            # UPDATE RESERVATION
+            if [[ "${{ steps.changes.outputs.updateReservation }}" == 'true' ]]; then
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1
+              sudo docker stop update-reservation || true
+              sudo docker rm update-reservation || true
+              sudo docker run -d --name update-reservation -p 3003:3003 \
+                -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+                -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+                -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+                ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1
+            fi
+
+  deploy-to-production:
+    if: github.event_name == 'pull_request' && github.event.pull_request.merged == true
+
+    runs-on: ubuntu-latest
+    name: 🚀 Deploy ReservationManagement to Production
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+
+      - name: Deploy to AWS EC2 (Production)
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS_RESERVATION_PROD }}
+          username: ubuntu
+          key: ${{ secrets.EC2_SSH_KEY_RESERVATION_PROD }}
+          script: |
+            sudo apt update && sudo apt install -y docker.io || true
+            sudo systemctl start docker
+            sudo docker system prune -af
+
+            # Remove old containers
+            for service in create-reservation delete-reservation list-reservation update-reservation; do
+              sudo docker stop $service || true
+              sudo docker rm $service || true
+              sudo docker pull ${{ secrets.DOCKERHUB_USERNAME }}/$service:v1
+            done
+
+            # CREATE RESERVATION
+            sudo docker run -d --name create-reservation -p 3001:3001 \
+              -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/create-reservation:v1
+
+            # DELETE RESERVATION
+            sudo docker run -d --name delete-reservation -p 3002:3002 \
+              -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/delete-reservation:v1
+
+            # UPDATE RESERVATION
+            sudo docker run -d --name update-reservation -p 3003:3003 \
+              -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/update-reservation:v1
+
+            # LIST RESERVATION
+            sudo docker run -d --name list-reservation -p 3004:3004 \
+              -e DB_HOST="${{ secrets.DB_HOST_POSTGRES }}" \
+              -e DB_USERNAME="${{ secrets.DB_USERNAME_POSTGRES }}" \
+              -e DB_PASSWORD="${{ secrets.DB_PASSWORD_POSTGRES }}" \
+              ${{ secrets.DOCKERHUB_USERNAME }}/list-reservation:v1

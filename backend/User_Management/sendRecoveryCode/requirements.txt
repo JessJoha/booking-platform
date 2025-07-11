@@ -1,0 +1,7 @@
+Flask
+flasgger
+flask-cors
+python-dotenv
+Flask-SQLAlchemy
+redis
+pymysql

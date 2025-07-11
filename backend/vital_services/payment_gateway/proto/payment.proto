@@ -1,0 +1,166 @@
+syntax = "proto3";
+
+package payment;
+
+service PaymentService {
+  // Process a payment
+  rpc ProcessPayment(PaymentRequest) returns (PaymentResponse);
+  
+  // Get payment status
+  rpc GetPaymentStatus(PaymentStatusRequest) returns (PaymentStatusResponse);
+  
+  // Refund a payment
+  rpc RefundPayment(RefundRequest) returns (RefundResponse);
+  
+  // Get payment history for a user
+  rpc GetPaymentHistory(PaymentHistoryRequest) returns (PaymentHistoryResponse);
+  
+  // Validate payment method
+  rpc ValidatePaymentMethod(PaymentMethodRequest) returns (PaymentMethodResponse);
+  
+  // Get supported payment methods
+  rpc GetSupportedMethods(Empty) returns (SupportedMethodsResponse);
+}
+
+message Empty {}
+
+message PaymentRequest {
+  string user_id = 1;
+  string booking_id = 2;
+  double amount = 3;
+  string currency = 4;
+  string payment_method = 5;
+  PaymentDetails payment_details = 6;
+  map<string, string> metadata = 7;
+}
+
+message PaymentDetails {
+  string card_number = 1;
+  string exp_month = 2;
+  string exp_year = 3;
+  string cvc = 4;
+  string cardholder_name = 5;
+  BillingAddress billing_address = 6;
+}
+
+message BillingAddress {
+  string street = 1;
+  string city = 2;
+  string state = 3;
+  string postal_code = 4;
+  string country = 5;
+}
+
+message PaymentResponse {
+  bool success = 1;
+  string transaction_id = 2;
+  string payment_intent_id = 3;
+  PaymentStatus status = 4;
+  string message = 5;
+  double amount_charged = 6;
+  string currency = 7;
+  int64 created_at = 8;
+  map<string, string> metadata = 9;
+}
+
+message PaymentStatusRequest {
+  string transaction_id = 1;
+}
+
+message PaymentStatusResponse {
+  bool found = 1;
+  string transaction_id = 2;
+  PaymentStatus status = 3;
+  double amount = 4;
+  string currency = 5;
+  int64 created_at = 6;
+  int64 updated_at = 7;
+  map<string, string> metadata = 8;
+}
+
+message RefundRequest {
+  string transaction_id = 1;
+  double amount = 2;
+  string reason = 3;
+  map<string, string> metadata = 4;
+}
+
+message RefundResponse {
+  bool success = 1;
+  string refund_id = 2;
+  string transaction_id = 3;
+  double amount_refunded = 4;
+  string currency = 5;
+  RefundStatus status = 6;
+  string message = 7;
+  int64 created_at = 8;
+}
+
+message PaymentHistoryRequest {
+  string user_id = 1;
+  int32 page = 2;
+  int32 limit = 3;
+  PaymentStatus status_filter = 4;
+  int64 start_date = 5;
+  int64 end_date = 6;
+}
+
+message PaymentHistoryResponse {
+  repeated PaymentRecord payments = 1;
+  int32 total_count = 2;
+  int32 page = 3;
+  int32 limit = 4;
+  bool has_next_page = 5;
+}
+
+message PaymentRecord {
+  string transaction_id = 1;
+  string booking_id = 2;
+  double amount = 3;
+  string currency = 4;
+  PaymentStatus status = 5;
+  string payment_method = 6;
+  int64 created_at = 7;
+  int64 updated_at = 8;
+  map<string, string> metadata = 9;
+}
+
+message PaymentMethodRequest {
+  string payment_method = 1;
+  PaymentDetails payment_details = 2;
+}
+
+message PaymentMethodResponse {
+  bool is_valid = 1;
+  string message = 2;
+  repeated string validation_errors = 3;
+}
+
+message SupportedMethodsResponse {
+  repeated PaymentMethod methods = 1;
+}
+
+message PaymentMethod {
+  string method_id = 1;
+  string name = 2;
+  string description = 3;
+  bool enabled = 4;
+  repeated string supported_currencies = 5;
+  map<string, string> configuration = 6;
+}
+
+enum PaymentStatus {
+  PENDING = 0;
+  PROCESSING = 1;
+  SUCCEEDED = 2;
+  FAILED = 3;
+  CANCELLED = 4;
+  REQUIRES_ACTION = 5;
+}
+
+enum RefundStatus {
+  REFUND_PENDING = 0;
+  REFUND_SUCCEEDED = 1;
+  REFUND_FAILED = 2;
+  REFUND_CANCELLED = 3;
+}
