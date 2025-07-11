@@ -1,9 +1,11 @@
 from flask import Flask
+from flask_cors import CORS
 from config import Config
 from routes.profileRoutes import profile_bp
 from flasgger import Swagger 
 
 app = Flask(__name__)
+CORS(app)
 app.config.from_object(Config)
 
 # Swagger configuration

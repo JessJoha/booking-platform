@@ -11,9 +11,9 @@ import (
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 
-	// Swagger imports
 	_ "occupancyReports/docs"
 
+	gorillaHandlers "github.com/gorilla/handlers"
 	httpSwagger "github.com/swaggo/http-swagger"
 )
 
@@ -29,12 +29,10 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// Swagger route
 	r.PathPrefix("/swagger/").Handler(httpSwagger.WrapHandler)
 
 	r.HandleFunc("/webhook/occupancy", handlers.WebhookHandler).Methods("POST")
 	r.HandleFunc("/report", handlers.ReportHandler).Methods("GET")
-
 	r.HandleFunc("/occupancy", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
@@ -46,6 +44,12 @@ func main() {
 	}
 
 	log.Printf("Listening on port %s", port)
-	log.Printf("test")
-	http.ListenAndServe(":"+port, r)
+
+	corsAllowed := gorillaHandlers.CORS(
+		gorillaHandlers.AllowedOrigins([]string{"*"}),
+		gorillaHandlers.AllowedMethods([]string{"GET", "POST"}),
+		gorillaHandlers.AllowedHeaders([]string{"Content-Type"}),
+	)
+
+	http.ListenAndServe(":"+port, corsAllowed(r))
 }

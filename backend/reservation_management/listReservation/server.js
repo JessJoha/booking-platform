@@ -1,7 +1,7 @@
 const express = require('express');
-const app = express();
 require('dotenv').config();
 const sequelize = require('./src/config/db');
+const cors = require('cors');
 const listRoutes = require('./src/routes/listRoutes');
 
 // Swagger setup
@@ -21,6 +21,9 @@ const swaggerOptions = {
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
+
+const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Swagger docs route

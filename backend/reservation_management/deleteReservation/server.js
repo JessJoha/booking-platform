@@ -1,6 +1,7 @@
 const express = require('express');
 require('dotenv').config();
 const sequelize = require('./src/config/db');
+const cors = require('cors');
 const reservationRoutes = require('./src/routes/deleteRoutes');
 
 const swaggerUi = require('swagger-ui-express');
@@ -20,6 +21,7 @@ const swaggerOptions = {
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 const app = express();
+app.use(cors());
 
 app.use(express.json());
 

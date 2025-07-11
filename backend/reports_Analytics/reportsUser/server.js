@@ -1,11 +1,13 @@
 const express = require('express');
 const reportRoutes = require('./src/routes/reportRoutes');
+const cors = require('cors');
 require('dotenv').config();
 
 const swaggerUi = require('swagger-ui-express');
 const swaggerJsdoc = require('swagger-jsdoc');
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // Swagger setup

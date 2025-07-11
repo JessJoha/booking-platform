@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+
 	// Swagger imports
 	_ "deleteSpace/docs"
 
@@ -18,6 +20,7 @@ func main() {
 	config.InitDB()
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	routes.SetupRoutes(router)
 
 	router.GET("/", func(c *gin.Context) {

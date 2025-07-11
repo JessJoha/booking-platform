@@ -8,6 +8,7 @@ import (
 
 	_ "createSpace/docs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -18,6 +19,7 @@ func main() {
 	config.InitDB()
 
 	router := gin.Default()
+	router.Use(cors.Default())
 	routes.SetupRoutes(router)
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

@@ -1,9 +1,11 @@
 from flask import Flask
+from flask_cors import CORS
 from routes.by_userRoute import user_bp
 from flasgger import Swagger
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 
 if not app.config.get("TESTING"):
