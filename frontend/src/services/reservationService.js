@@ -1,10 +1,11 @@
-import api from './api';
+import api from './api'; 
+
 import {
   RESERVATIONS_URL,
   DELETE_RESERVATIONS_URL,
   UPDATE_RESERVATIONS_URL,
-  LIST_RESERVATIONS_URL
-} from './api';
+  LIST_RESERVATIONS_URL,
+} from './api'; 
 
 export const reservationService = {
 

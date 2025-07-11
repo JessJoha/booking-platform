@@ -1,19 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { reservationService } from '../services/reservationService';
 import { spaceService } from '../services/spaceService';
-import { 
-  Plus, Edit, Trash2, CheckCircle, XCircle, AlertCircle 
-} from 'lucide-react';
+import { Plus, Edit, Trash2 } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useAuth } from '../context/authContext';
 
 const Reservations = () => {
+  const { user } = useAuth();
   const [reservations, setReservations] = useState([]);
   const [spaces, setSpaces] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
   const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({ userId: '', spaceId: '', date: '', time: '', reason: '' });
+  const [formData, setFormData] = useState({ spaceId: '', date: '', time: '', reason: '' });
   const [editingId, setEditingId] = useState(null);
 
   useEffect(() => {
@@ -39,15 +38,18 @@ const Reservations = () => {
   const handleCreateOrUpdate = async (e) => {
     e.preventDefault();
     try {
+      const payload = { ...formData, userId: user.user_id };
+
       if (editingId) {
-        await reservationService.updateReservation(editingId, formData);
+        await reservationService.updateReservation(editingId, payload);
         toast.success('Reserva actualizada');
       } else {
-        await reservationService.createReservation(formData);
+        await reservationService.createReservation(payload);
         toast.success('Reserva creada');
       }
+
       setShowForm(false);
-      setFormData({ userId: '', spaceId: '', date: '', time: '', reason: '' });
+      setFormData({ spaceId: '', date: '', time: '', reason: '' });
       setEditingId(null);
       loadData();
     } catch (error) {
@@ -57,7 +59,6 @@ const Reservations = () => {
 
   const startEdit = (reservation) => {
     setFormData({
-      userId: reservation.userId,
       spaceId: reservation.spaceId,
       date: reservation.date,
       time: reservation.time,
@@ -80,9 +81,10 @@ const Reservations = () => {
   };
 
   const filtered = reservations.filter(r => {
-    const matchSearch = r.spaceId?.toString().includes(searchTerm) || r.userId?.toString().includes(searchTerm);
-    const matchStatus = statusFilter === 'all' || r.status?.toLowerCase() === statusFilter;
-    return matchSearch && matchStatus;
+    const matchSearch =
+      r.spaceId?.toString().includes(searchTerm) ||
+      r.userId?.toString().includes(searchTerm);
+    return matchSearch;
   });
 
   return (
@@ -90,7 +92,7 @@ const Reservations = () => {
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold text-gray-900">Reservas</h1>
         <button className="btn btn-primary" onClick={() => {
-          setFormData({ userId: '', spaceId: '', date: '', time: '', reason: '' });
+          setFormData({ spaceId: '', date: '', time: '', reason: '' });
           setEditingId(null);
           setShowForm(true);
         }}>
@@ -99,7 +101,6 @@ const Reservations = () => {
         </button>
       </div>
 
-      {/* Formulario */}
       {showForm && (
         <form onSubmit={handleCreateOrUpdate} className="card p-4 space-y-4">
           <select required value={formData.spaceId} onChange={e => setFormData({ ...formData, spaceId: e.target.value })} className="input">
@@ -108,7 +109,6 @@ const Reservations = () => {
               <option key={s.id} value={s.id}>{s.name || `Espacio ${s.id}`}</option>
             ))}
           </select>
-          <input required type="text" placeholder="ID de usuario" value={formData.userId} onChange={e => setFormData({ ...formData, userId: e.target.value })} className="input" />
           <input required type="date" value={formData.date} onChange={e => setFormData({ ...formData, date: e.target.value })} className="input" />
           <input required type="time" value={formData.time} onChange={e => setFormData({ ...formData, time: e.target.value })} className="input" />
           <input type="text" placeholder="Motivo" value={formData.reason} onChange={e => setFormData({ ...formData, reason: e.target.value })} className="input" />
@@ -119,20 +119,10 @@ const Reservations = () => {
         </form>
       )}
 
-      {/* Filtros */}
       <div className="card p-4">
-        <div className="flex gap-4">
-          <input type="text" placeholder="Buscar por ID" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="input" />
-          <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} className="input w-40">
-            <option value="all">Todos</option>
-            <option value="confirmed">Confirmadas</option>
-            <option value="pending">Pendientes</option>
-            <option value="cancelled">Canceladas</option>
-          </select>
-        </div>
+        <input type="text" placeholder="Buscar por ID" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} className="input" />
       </div>
 
-      {/* Tabla */}
       <div className="card">
         {filtered.length > 0 ? (
           <table className="w-full">

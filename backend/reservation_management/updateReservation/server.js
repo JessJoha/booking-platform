@@ -22,7 +22,13 @@ const swaggerOptions = {
 };
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
 
-app.use(cors());
+app.use(cors({
+  origin: 'http://192.168.56.1:3000',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true
+}));
+app.options('*', cors());
 app.use(express.json());
 
 // Swagger docs route
