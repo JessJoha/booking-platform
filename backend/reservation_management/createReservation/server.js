@@ -45,6 +45,7 @@ if (require.main === module) {
     .then(() => {
       app.listen(PORT, () => {
         console.log(`Reservation server running on port ${PORT}`);
+        console.log(`Reservation`);
         console.log(`Swagger docs available at http://44.198.112.22:${PORT}/api-docs`);
       });
     })
